@@ -8,6 +8,7 @@ Writes  data/<run>.js           everything the pages show, as window.SIGBG.runs[
         data/index.js           run list + pipeline metadata
         img/<run>/...           every PDF page rendered to PNG (128-colour, ~60 KB each)
         img/archive/...         every page of every archived run's PDFs (90 dpi), data/archive_plots.js
+        bundles/<run>/*.pdf     one PDF per split (e.g. every feature's endcap signal-vs-background page), bookmarked
 
 The page itself (index.html, assets/) is hand-written and never touched by this script.
 Re-running is incremental: a PNG is only re-rendered when its PDF is newer.
@@ -81,6 +82,29 @@ FILE_GUIDE = [
     ("E_selection/selection_check.txt", "How the samples were selected: HTmiss edge and background jet-multiplicity structure (tools/selection_check.py)."),
     ("E_selection/selection_check.json", "Same, machine-readable; read by the Findings page."),
 ]
+
+
+# The splits the Graphs page and the PDF bundles are organised by. Each split picks one page out of every
+# feature PDF, by the page label render_pdf() assigns.  order = how the bundle orders features:
+# a region name -> that region's KS rank; "A" -> Block A's folder rank (|D_barrel - D_endcap|, as printed on the page).
+SPLITS = [
+    {"id": "sb_endcap", "group": "sig_bkg", "short": "endcap", "block": "B", "label": "endcap", "order": "endcap",
+     "title": "Signal vs background · endcap",
+     "desc": "Each mass point, the combined signal, and background alone, in the endcap. Raw and normalized."},
+    {"id": "sb_barrel", "group": "sig_bkg", "short": "barrel", "block": "B", "label": "barrel", "order": "barrel",
+     "title": "Signal vs background · barrel",
+     "desc": "Each mass point, the combined signal, and background alone, in the barrel. Raw and normalized."},
+    {"id": "sb_all", "group": "sig_bkg", "short": "all", "block": "B", "label": "all", "order": "all",
+     "title": "Signal vs background · barrel + endcap",
+     "desc": "The same plots with both regions together."},
+    {"id": "sb_side", "group": "sig_bkg", "short": "endcap | barrel", "block": "A", "label": "separation", "order": "A",
+     "title": "Signal vs background · endcap | barrel side by side",
+     "desc": "Endcap on the left, barrel on the right, on one page (normalized). Ordered by |D_barrel - D_endcap|."},
+    {"id": "be_shape", "group": "bar_end", "short": "shape", "block": "A", "label": "shape", "order": "A",
+     "title": "Barrel vs endcap · shape of background and of signal",
+     "desc": "Background in barrel vs endcap (top), combined signal in barrel vs endcap (bottom). Ordered by |D_barrel - D_endcap|."},
+]
+BUNDLES = REPO / "bundles"
 
 
 def log(msg):
@@ -341,6 +365,73 @@ def render_archive_plots(dpi, force):
     return out
 
 
+def split_members(split, feats):
+    """[(feature, pdf path rel. to repo, 0-based page index)] for one split, in the split's bundle order."""
+    key = "plots_B" if split["block"] == "B" else "plots_A"
+    out = []
+    for f in feats.values():
+        pl = f.get(key)
+        if not pl:
+            continue
+        k = next((i for i, p in enumerate(pl["pages"]) if p["label"] == split["label"]), None)
+        if k is None:
+            continue
+        if split["order"] == "A":
+            rank = pl.get("folder_rank", 999)
+        else:
+            rank = f["regions"].get(split["order"], {}).get("rank", 999)
+        out.append((rank, f["name"], pl["pdf"], k))
+    out.sort()
+    return [(n, pdf, k) for _, n, pdf, k in out]
+
+
+def build_bundles(run, feats, force):
+    """bundles/<run>/<split id>.pdf: the split's page from every feature PDF, one bookmark per feature.
+    Rebuilt only when its page list or a source PDF's content changed (bundles/<run>/manifest.json holds
+    an md5 per split over the page list and the source PDFs, so it is the same on every machine)."""
+    import hashlib
+    import pymupdf
+    outdir = BUNDLES / run
+    outdir.mkdir(parents=True, exist_ok=True)
+    mf_path = outdir / "manifest.json"
+    manifest = json.loads(read_text(mf_path)) if mf_path.exists() else {}
+    out = []
+    log(f"  bundles: {len(SPLITS)} split PDFs -> {outdir.relative_to(REPO).as_posix()}/")
+    for si, sp in enumerate(SPLITS, 1):
+        mem = split_members(sp, feats)
+        dest = outdir / f"{sp['id']}.pdf"
+        h = hashlib.md5(json.dumps([[n, pdf, k] for n, pdf, k in mem]).encode())
+        for pdf in sorted({pdf for _, pdf, _ in mem}):
+            h.update((REPO / pdf).read_bytes())
+        sig = h.hexdigest()
+        if force or not dest.exists() or manifest.get(sp["id"]) != sig:
+            doc, toc, cache = pymupdf.open(), [], {}
+            for i, (name, pdf, k) in enumerate(mem, 1):
+                if pdf not in cache:
+                    cache.clear()          # one source open at a time; each feature PDF is used once per split
+                    cache[pdf] = pymupdf.open(REPO / pdf)
+                doc.insert_pdf(cache[pdf], from_page=k, to_page=k)
+                toc.append([1, name, doc.page_count])
+                if i % 7 == 0 or i == len(mem):
+                    bar(i, len(mem), f"[{si}/{len(SPLITS)}] {sp['id']}  {name}")
+            cache.clear()
+            doc.set_toc(toc)
+            doc.set_metadata({"title": f"SIG/BG Feature Explorer · {run} · {sp['title']}",
+                              "subject": sp["desc"], "creator": "site_builder/build_site.py",
+                              "producer": "PyMuPDF", "creationDate": "", "modDate": ""})
+            doc.save(dest, garbage=3, deflate=True)
+            doc.close()
+            manifest[sp["id"]] = sig
+            status = "written"
+        else:
+            status = "unchanged"
+        out.append({"id": sp["id"], "href": dest.relative_to(REPO).as_posix(), "pages": len(mem),
+                    "bytes": dest.stat().st_size, "features": [n for n, _, _ in mem]})
+        log(f"    {sp['id']:<10} {len(mem):>3} pages  {dest.stat().st_size / 1e6:5.2f} MB  {status}")
+    mf_path.write_text(json.dumps(manifest, indent=1), encoding="utf-8")
+    return out
+
+
 def attach_bkg_split(feats):
     """D(background 0-1 jets vs 2+ jets) and D(signal vs 2+-jet background) from the mk2 htmissScalar run."""
     bs, cmp_ = BKG_SPLIT_RUN / "bkg_split.csv", None
@@ -522,6 +613,11 @@ def build_run(run, dpi, force):
                 feats[target][key] = {"pdf": f"results/{run}/{rel}", "pages": pages, "folder_rank": num}
         elif rel.endswith("_SUMMARY.pdf"):
             R["summaries"].append({"block": parts[0], "pdf": f"results/{run}/{rel}", "pages": pages})
+
+    # ---------------------------------------------------------------- splits + PDF bundles (Graphs page)
+    bundles = {b["id"]: b for b in build_bundles(run, feats, force)}
+    R["splits"] = [dict(sp, bundle={k: v for k, v in bundles[sp["id"]].items() if k != "features"})
+                   for sp in SPLITS]
 
     # ---------------------------------------------------------------- file guide
     files = []

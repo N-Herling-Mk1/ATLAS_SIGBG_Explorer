@@ -342,3 +342,78 @@ code { overflow-wrap: anywhere; }
 .plotbar b.mono { overflow-wrap: anywhere; }
 .gallery figcaption { overflow-wrap: anywhere; }
 @media (max-width: 760px) { #ppdf, #psrc { width: 100%; } }
+
+/* ---------------------------------------------------------------- graphs page (split matrix, grid, rows) */
+.smatrix { border: 1px solid var(--grid); border-radius: 6px; margin: 18px 0 4px; background: var(--panel); }
+.srow { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 14px; align-items: center; padding: 12px 14px; }
+.srow + .srow { border-top: 1px solid var(--grid); }
+.slab b { display: block; font: 900 12.5px/1.2 var(--display); letter-spacing: .1em; text-transform: uppercase; }
+.slab span { font-size: 12px; color: var(--ink2); }
+.stiles { display: flex; flex-wrap: wrap; gap: 10px; }
+.stile { --tone: var(--ink); --tone-bg: var(--panel2); display: flex; flex-direction: column; border: 1.5px solid var(--rule); border-radius: 6px; overflow: hidden; background: var(--bg); min-width: 150px; }
+.stile.endcap { --tone: var(--endcap-ink); --tone-bg: var(--endcap); }
+.stile.barrel { --tone: var(--barrel-ink); --tone-bg: var(--barrel); }
+.stile.side { --tone: var(--ink); --tone-bg: linear-gradient(90deg, var(--endcap) 50%, var(--barrel) 50%); }
+.stile button { display: flex; align-items: center; gap: 8px; font: 700 13px/1 var(--display); letter-spacing: .06em; text-transform: uppercase;
+  border: 0; padding: 11px 12px; background: transparent; color: var(--ink2); cursor: pointer; text-align: left; }
+.stile button:hover { color: var(--ink); }
+.stile .tick { width: 14px; height: 14px; border: 1.5px solid currentColor; border-radius: 3px; flex: none; position: relative; }
+.stile.on { border-color: var(--tone); box-shadow: var(--glow-soft); }
+.stile.on button { background: var(--tone-bg); color: var(--ink); }
+.stile.on .tick { background: var(--tone); border-color: var(--tone); }
+.stile.on .tick::after { content: ""; position: absolute; left: 3.5px; top: 0; width: 4px; height: 8px; border: solid var(--bg); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.stile.side.on .tick { background: var(--accent); border-color: var(--accent); }
+.stile a { font: 11.5px/1 var(--mono); padding: 7px 12px; border-top: 1px solid var(--grid); color: var(--ink2); text-decoration: none; white-space: nowrap; }
+.stile a::before { content: "⤓ "; color: var(--accent); }
+.stile a:hover { color: var(--accent); background: var(--accent-soft); }
+.stile > span { padding: 7px 12px; border-top: 1px solid var(--grid); }
+
+.gdl { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin: 4px 0 18px; padding: 12px 14px; border: 1px dashed var(--rule); border-radius: 6px; }
+.gdl > .muted { flex: 1 1 320px; }
+.gprog { display: flex; align-items: center; gap: 10px; flex: 1 1 260px; min-width: 0; }
+.gprog[hidden] { display: none; }
+.gprog span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.pbar { flex: 0 0 180px; height: 8px; background: var(--panel2); border-radius: 4px; overflow: hidden; }
+.pbar i { display: block; height: 100%; width: 0; background: var(--accent); box-shadow: var(--glow); transition: width .12s; }
+
+.ggrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--gmin, 380px)), 1fr)); gap: 12px; }
+.gfig { margin: 0; border: 1px solid var(--grid); border-radius: 6px; overflow: hidden; background: var(--panel); box-shadow: var(--shadow); display: flex; flex-direction: column; }
+.gfig img { display: block; width: 100%; height: auto; background: var(--plotbg); cursor: zoom-in; aspect-ratio: 1210 / 935; }
+.gfig figcaption { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; font-size: 12px; padding: 8px 10px; border-top: 1px solid var(--grid); color: var(--ink2); }
+.gfig .gname { display: flex; gap: 8px; align-items: baseline; flex: 1 1 100%; min-width: 0; }
+.gfig .gname .fname { font: 13px var(--mono); color: var(--ink); text-decoration: none; overflow-wrap: anywhere; }
+.gfig .gname .fname:hover { color: var(--accent); }
+.gfig .gflags { flex: 1 1 100%; }
+.gfig .gflags:empty { display: none; }
+.gstat { font: 12px var(--mono); }
+.gstat b { color: var(--ink); font-weight: 400; }
+.gpdf { margin-left: auto; font: 11.5px var(--mono); color: var(--ink2); }
+.gnum { font: 900 12px/1 var(--display); color: var(--accent); min-width: 22px; }
+.gfig.none { justify-content: space-between; }
+.gnone { aspect-ratio: 1210 / 935; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 4px;
+  font-size: 13px; color: var(--ink2); padding: 20px; background: repeating-linear-gradient(135deg, var(--panel) 0 10px, var(--panel2) 10px 20px); }
+
+.gcolhead { display: grid; grid-template-columns: repeat(var(--gcols), minmax(0, 1fr)); gap: 12px; position: sticky; top: var(--hdr, 96px); z-index: 5; padding: 8px 0; background: var(--bg); }
+.gcolhead > div { font: 700 11.5px/1.25 var(--display); letter-spacing: .08em; text-transform: uppercase; padding: 8px 10px; border-radius: 4px; background: var(--all); color: var(--ink); }
+.gcolhead .endcap { background: var(--endcap); color: var(--endcap-ink); }
+.gcolhead .barrel { background: var(--barrel); color: var(--barrel-ink); }
+.gcolhead .side { background: linear-gradient(90deg, var(--endcap) 50%, var(--barrel) 50%); }
+.grow { border-top: 1px solid var(--rule); padding: 12px 0 18px; }
+.grow-head { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin-bottom: 10px; }
+.grow-head .fname { font: 700 15px var(--mono); color: var(--ink); text-decoration: none; overflow-wrap: anywhere; }
+.grow-head .fname:hover { color: var(--accent); }
+.grow-head .gflags { flex: 1 1 auto; }
+.gcols { display: grid; grid-template-columns: repeat(var(--gcols), minmax(0, 1fr)); gap: 12px; }
+
+.lightbox .lb-bar { flex-wrap: wrap; justify-content: center; max-width: 100%; }
+.lightbox .lb-bar button[disabled] { opacity: .3; cursor: default; }
+.lightbox .lb-cap { max-width: 60ch; overflow-wrap: anywhere; text-align: center; }
+
+@media (max-width: 760px) {
+  .srow { grid-template-columns: 1fr; gap: 8px; }
+  .stile { flex: 1 1 140px; min-width: 0; }
+  .stile a { white-space: normal; line-height: 1.35; }
+  .gcols { grid-template-columns: 1fr; }
+  .gcolhead { display: none; }
+  .pbar { flex-basis: 120px; }
+}

@@ -182,6 +182,7 @@
       <h2>Where to <span class="k">go</span></h2>
       <div class="grid g3">
         ${[
+          ["graphs", "Graphs", "Every plot, by split: signal vs background in endcap / barrel / both, barrel vs endcap shapes. One PDF per split."],
           ["findings", "Findings", "How the samples were selected, and what it means for every ranking."],
           ["rankings", "Rankings", "All features by KS D per region, with flags, NN-list membership and filters."],
           ["feature", "Feature view", "One feature: scores, flags, every plot, PDF downloads."],
@@ -191,7 +192,7 @@
           ["exclusions", "Exclusions", "What was left out and why; build a new exclude_features.txt."],
           ["methods", "Metrics", "Definitions of every number on this site."],
           ["files", "Files & code", "Download every result file and the code to rerun it."],
-          ["plots", "All plots", "Every page of every PDF, current and archived: browse or search all of them."],
+          ["plots", "PDF browser", "Every page of every PDF, current and archived, PDF by PDF: browse or search all of them."],
           ["archive", "Archive", "mk1 → mk4: every script version and every run, with what changed."],
         ].map(([h, t, d]) => `<a class="card link" href="#/${h}"><h3>${t} <span class="arrow">→</span></h3><p class="muted small">${d}</p></a>`).join("")}
       </div>
@@ -277,7 +278,8 @@
         <span class="count">${list.length} of ${byRank(r).length} · bkg n = ${int(r === "all" ? rs.n : rs[r])}</span>
       </div>
       <div class="legend" style="margin-bottom:10px">${RUN.masses.map((m, i) => `<span><i style="background:${SLOT()[i]}"></i>${esc(m)}</span>`).join("")}
-        <a class="btn sm" style="margin-left:auto" href="results/${esc(RUN.name)}/B_mc_vs_data/ks_scores_wide.csv" download>ks_scores_wide.csv</a></div>
+        <a class="btn sm" style="margin-left:auto" href="#/graphs/sb_${esc(r)}" title="the same filters, as plots">plots for this list →</a>
+        <a class="btn sm" href="results/${esc(RUN.name)}/B_mc_vs_data/ks_scores_wide.csv" download>ks_scores_wide.csv</a></div>
       ${rankTable(list, r, true)}
       <p class="muted small" style="margin-top:10px">"separates" = ${tex("D \\ge \\max(" + (P().WEAK_D || 0.2) + ",\\,2D_{crit})")}.
       Flags and drop suggestions come from the pipeline (<code>gambit_inputs/drop_suggestions.txt</code>); see <a href="#/methods">Metrics</a>.
@@ -792,6 +794,253 @@ ${sel && sel.samples.bkg.met_median != null ? `
 
 
 
+  // ------------------------------------------------------------------ GRAPHS (one split = one page out of every feature PDF)
+  // Split definitions come from the builder (RUN.splits, with the pre-built bundle PDF). This copy is the fallback
+  // for a run built before splits existed: same pages, no bundles.
+  const SPLIT_FALLBACK = [
+    { id: "sb_endcap", group: "sig_bkg", short: "endcap", block: "B", label: "endcap", order: "endcap", title: "Signal vs background · endcap" },
+    { id: "sb_barrel", group: "sig_bkg", short: "barrel", block: "B", label: "barrel", order: "barrel", title: "Signal vs background · barrel" },
+    { id: "sb_all", group: "sig_bkg", short: "all", block: "B", label: "all", order: "all", title: "Signal vs background · barrel + endcap" },
+    { id: "sb_side", group: "sig_bkg", short: "endcap | barrel", block: "A", label: "separation", order: "A", title: "Signal vs background · endcap | barrel side by side" },
+    { id: "be_shape", group: "bar_end", short: "shape", block: "A", label: "shape", order: "A", title: "Barrel vs endcap · shape of background and of signal" },
+  ];
+  const SPLIT_GROUPS = [
+    ["sig_bkg", "Signal vs background", "MC signal against data background, per region"],
+    ["bar_end", "Barrel vs endcap", "the same sample in the two regions"],
+  ];
+  const SPLIT_TONE = { sb_endcap: "endcap", sb_barrel: "barrel", sb_all: "all", sb_side: "side", be_shape: "shape" };
+  const PDFLIB_URL = "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js";
+  const G_SIZES = { S: 240, M: 380, L: 620 };
+  const G_SORTS = [
+    ["endcap", "endcap D (rank)"], ["barrel", "barrel D (rank)"], ["all", "barrel + endcap D (rank)"],
+    ["delta", "|D barrel − D endcap|"], ["shape_bkg", "shape D · background"], ["shape_sig", "shape D · signal"], ["name", "name"],
+  ];
+  const splitList = () => (RUN.splits && RUN.splits.length ? RUN.splits : SPLIT_FALLBACK);
+  function splitPage(f, sp) {
+    const pl = f[sp.block === "B" ? "plots_B" : "plots_A"];
+    if (!pl) return null;
+    const k = pl.pages.findIndex((p) => p.label === sp.label);
+    return k < 0 ? null : { src: pl.pages[k].src, pdf: pl.pdf, k };
+  }
+  const splitRegions = (sp) => (sp.order === "A" ? ["endcap", "barrel"] : [sp.order]);
+  function splitStat(f, sp) {
+    if (sp.order !== "A") {
+      const x = f.regions[sp.order];
+      return x ? `D <b>${fmt(x.D)}</b> · rank ${x.rank}${separates(x) ? "" : ` · <span class="muted">below "separates"</span>`}` : `<span class="muted">not scored</span>`;
+    }
+    const A = f.A || {};
+    return sp.label === "shape" ? `shape D · bkg <b>${fmt(A.shape_D_bkg)}</b> · sig <b>${fmt(A.shape_D_sig)}</b>`
+      : `endcap <b>${fmt(A.D_endcap)}</b> · barrel <b>${fmt(A.D_barrel)}</b> · Δ ${fmt(A.delta_barrel_minus_endcap)}`;
+  }
+  function gSortKey(k) {   // returns value where larger = earlier; null sorts last
+    const A = (f) => f.A || {};
+    return {
+      endcap: (f) => (f.regions.endcap || {}).D, barrel: (f) => (f.regions.barrel || {}).D, all: (f) => (f.regions.all || {}).D,
+      delta: (f) => (A(f).delta_barrel_minus_endcap == null ? null : Math.abs(A(f).delta_barrel_minus_endcap)),
+      shape_bkg: (f) => A(f).shape_D_bkg, shape_sig: (f) => A(f).shape_D_sig,
+    }[k];
+  }
+  const gDefaultSort = (sp) => (sp.order === "A" ? "delta" : sp.order);
+  function loadScript(url) {
+    return new Promise((ok, bad) => {
+      const s = document.createElement("script");
+      s.src = url; s.onload = ok; s.onerror = () => bad(new Error("could not load " + url));
+      document.head.appendChild(s);
+    });
+  }
+  function lightboxNav(items, start) {
+    let i = start;
+    const lb = document.createElement("div");
+    lb.className = "lightbox";
+    const draw = () => {
+      const it = items[i];
+      lb.innerHTML = `<img src="${esc(it.src)}" alt="${esc(it.caption)}">
+        <div class="lb-bar"><button type="button" data-d="-1" ${i ? "" : "disabled"} aria-label="Previous">←</button>
+        <span class="lb-cap">${i + 1} / ${items.length} · ${esc(it.caption)}</span>
+        <button type="button" data-d="1" ${i < items.length - 1 ? "" : "disabled"} aria-label="Next">→</button>
+        <a href="${esc(it.pdf)}#page=${it.k + 1}" target="_blank" rel="noopener">open PDF p${it.k + 1}</a>
+        <a href="${esc(it.pdf)}" download>download PDF</a><a href="${esc(it.src)}" download>PNG</a>
+        <a href="#/feature/${fid(it.feature)}" data-go>feature page</a><button type="button" data-x>close (Esc)</button></div>`;
+    };
+    const step = (d) => { const j = i + d; if (j >= 0 && j < items.length) { i = j; draw(); } };
+    const close = () => { lb.remove(); document.removeEventListener("keydown", onKey); };
+    const onKey = (e) => {
+      if (e.key === "Escape") close();
+      else if (e.key === "ArrowRight") { e.preventDefault(); step(1); }
+      else if (e.key === "ArrowLeft") { e.preventDefault(); step(-1); }
+    };
+    lb.addEventListener("click", (e) => {
+      const t = e.target;
+      if (t === lb || t.hasAttribute("data-x") || t.hasAttribute("data-go")) close();
+      else if (t.dataset.d) step(+t.dataset.d);
+    });
+    document.addEventListener("keydown", onKey);
+    draw();
+    document.body.appendChild(lb);
+  }
+
+  VIEWS.graphs = function (arg) {
+    const all = splitList();
+    const want = (arg || "").split("+").filter((id) => all.some((s) => s.id === id));
+    if (want.length) ui.gSplits = want;
+    if (!ui.gSplits || !ui.gSplits.length) ui.gSplits = ["sb_endcap", "sb_barrel"];
+    const sel = all.filter((s) => ui.gSplits.includes(s.id));
+    if (!sel.length) { location.replace("#/graphs/sb_endcap+sb_barrel"); return; }
+    ui.gSize = ui.gSize || "M";
+    if (ui.gSortAuto !== false || !ui.gSort) ui.gSort = gDefaultSort(sel[0]);
+    const regs = [...new Set(sel.flatMap(splitRegions))];
+
+    // filters (shared with Rankings) + search
+    let list = RUN.features.slice();
+    const q = (ui.gQ || "").trim().toLowerCase();
+    if (q) list = list.filter((f) => f.name.toLowerCase().includes(q));
+    if (ui.hideHM) list = list.filter((f) => f.category !== "htmiss-linked");
+    if (ui.hideNP) list = list.filter((f) => f.category !== "non-physics" && !f.suspicious);
+    if (ui.hideJet) list = list.filter((f) => !regs.some((r) => jetDep(f, r)));
+    if (ui.onlyNN) list = list.filter((f) => (f.nn_lists || []).length);
+    if (ui.onlySep) list = list.filter((f) => regs.some((r) => separates(f.regions[r])));
+    list = list.filter((f) => sel.some((sp) => splitPage(f, sp)));
+    if (ui.gSort === "name") list.sort((a, b) => a.name.localeCompare(b.name));
+    else {
+      const key = gSortKey(ui.gSort);
+      list.sort((a, b) => { const A = key(a), B = key(b); return (A == null) - (B == null) || (B || 0) - (A || 0) || a.name.localeCompare(b.name); });
+    }
+
+    // every image in view order: feature by feature, split by split (same order as the PDF download)
+    const items = [];
+    list.forEach((f) => sel.forEach((sp) => {
+      const pg = splitPage(f, sp);
+      if (pg) items.push({ f, sp, ...pg, feature: f.name, caption: `${f.name} · ${sp.title}` });
+    }));
+    const idx = new Map(items.map((it, n) => [it.f.name + "|" + it.sp.id, n]));
+    const nTotal = RUN.features.length;
+    const isFile = location.protocol === "file:";
+
+    const tile = (sp) => {
+      const on = ui.gSplits.includes(sp.id), b = sp.bundle;
+      return `<div class="stile ${SPLIT_TONE[sp.id] || ""} ${on ? "on" : ""}">
+        <button type="button" data-s="${esc(sp.id)}" aria-pressed="${on}"><span class="tick" aria-hidden="true"></span>${esc(sp.short)}</button>
+        ${b ? `<a href="${esc(b.href)}" download title="every feature's ${esc(sp.label)} page in one PDF, bookmarked per feature">PDF · ${b.pages} p · ${kb(b.bytes)}</a>` : `<span class="muted small">no bundle (rebuild)</span>`}
+      </div>`;
+    };
+    const fig = (f, sp, caption) => {
+      const pg = splitPage(f, sp);
+      if (!pg) return `<figure class="gfig none"><div class="gnone">no ${esc(sp.label)} page in this feature's PDF<br><span class="muted">the pipeline skipped this region for ${esc(f.name)}</span></div>
+        <figcaption><span class="chip ${SPLIT_TONE[sp.id]}">${esc(sp.short)}</span></figcaption></figure>`;
+      const n = idx.get(f.name + "|" + sp.id);
+      return `<figure class="gfig"><img src="${esc(pg.src)}" alt="${esc(f.name)} · ${esc(sp.title)}" loading="lazy" data-n="${n}">
+        <figcaption>${caption}<span class="gstat">${splitStat(f, sp)}</span>
+        <a class="gpdf" href="${esc(pg.pdf)}#page=${pg.k + 1}" target="_blank" rel="noopener" title="open the feature PDF at this page">PDF p${pg.k + 1}</a></figcaption></figure>`;
+    };
+    const jetMulti = (f) => {
+      const on = regs.filter((r) => jetDep(f, r));
+      return on.length ? `<span class="chip jet" title="background 0-1 jets vs 2+ jets (mk2 background split)">jet-dep ${on.map((r) => `${r} ${fmt(f.bkg_split[r].D, 2)}`).join(" · ")}</span>` : "";
+    };
+    const flags = (f) => catChip(f) + jetMulti(f) + nnChips(f);
+    let body;
+    if (!list.length) body = `<p class="muted">No features match the filters.</p>`;
+    else if (sel.length === 1) {
+      const sp = sel[0];
+      body = `<div class="ggrid" style="--gmin:${G_SIZES[ui.gSize]}px">${list.map((f, i) =>
+        fig(f, sp, `<span class="gname"><span class="gnum">${i + 1}</span><a class="fname" href="#/feature/${fid(f.name)}">${esc(f.name)}</a></span><span class="gflags">${flags(f)}</span>`)).join("")}</div>`;
+    } else {
+      body = `<div class="gcolhead" style="--gcols:${sel.length}">${sel.map((sp) => `<div class="${SPLIT_TONE[sp.id]}">${esc(sp.title)}</div>`).join("")}</div>
+        ${list.map((f, i) => `<section class="grow">
+          <div class="grow-head"><span class="gnum">${i + 1}</span><a class="fname" href="#/feature/${fid(f.name)}">${esc(f.name)}</a><span class="gflags">${flags(f)}</span>
+            ${f.plots_B ? `<a class="btn sm" href="${esc(f.plots_B.pdf)}" download title="${esc(f.name)}: signal vs background, every region">PDF · S/B</a>` : ""}
+            ${f.plots_A ? `<a class="btn sm" href="${esc(f.plots_A.pdf)}" download title="${esc(f.name)}: barrel vs endcap">PDF · B/E</a>` : ""}</div>
+          <div class="gcols" style="--gcols:${sel.length}">${sel.map((sp) => fig(f, sp, `<span class="chip ${SPLIT_TONE[sp.id]}">${esc(sp.short)}</span>`)).join("")}</div>
+        </section>`).join("")}`;
+    }
+
+    app.innerHTML = `
+      <div class="eyebrow">every graph · pick the split</div>
+      <h1>Graphs</h1>
+      <p class="lede">Choose one or more splits. One split shows that page from every feature's PDF as a grid. Several splits show one row per
+      feature with the splits side by side. Click any plot to enlarge it, then use ← → to step through everything on screen.</p>
+      <div class="smatrix">${SPLIT_GROUPS.map(([g, t, d]) => `<div class="srow"><div class="slab"><b>${esc(t)}</b><span>${esc(d)}</span></div>
+        <div class="stiles">${all.filter((s) => s.group === g).map(tile).join("")}</div></div>`).join("")}</div>
+      <div class="toolbar">
+        <input type="search" id="gq" placeholder="search feature name" value="${esc(ui.gQ || "")}" aria-label="Search features">
+        <label>sort <select id="gsort">${G_SORTS.map(([k, l]) => `<option value="${k}" ${k === ui.gSort ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
+        ${sel.length === 1 ? `<div class="seg" aria-label="Plot size">${Object.keys(G_SIZES).map((k) => `<button type="button" data-z="${k}" class="${k === ui.gSize ? "on" : ""}">${k}</button>`).join("")}</div>` : ""}
+        <span class="count">${list.length} of ${nTotal} features · ${items.length} plots</span>
+      </div>
+      <div class="toolbar" style="margin-top:-6px">
+        <label><input type="checkbox" id="ghm" ${ui.hideHM ? "checked" : ""}> hide htmiss-linked</label>
+        <label><input type="checkbox" id="gnp" ${ui.hideNP ? "checked" : ""}> hide non-physics / suspicious</label>
+        <label title="jet-dependent in any region shown"><input type="checkbox" id="gjd" ${ui.hideJet ? "checked" : ""}> hide jet-dependent</label>
+        <label><input type="checkbox" id="gnn" ${ui.onlyNN ? "checked" : ""}> only NN-list features</label>
+        <label title="separates in at least one region shown"><input type="checkbox" id="gsp" ${ui.onlySep ? "checked" : ""}> only "separates"</label>
+      </div>
+      <div class="gdl">
+        <button class="btn primary" type="button" id="gdl" ${items.length && !isFile ? "" : "disabled"}>Download this view as one PDF · ${items.length} pages</button>
+        <div class="gprog" id="gprog" hidden><div class="pbar"><i></i></div><span class="small mono"></span></div>
+        <span class="small muted">${isFile ? `Opened from a file, so the browser won't let this page read the PDFs. The per-split PDFs above work anyway;
+          for a filtered PDF, serve the folder (<code>python -m http.server</code> in the repo, then open <code>localhost:8000</code>) or use GitHub Pages.`
+          : "Pages in the order shown, filters applied, built in your browser from the original vector PDFs. The PDF links on the split tiles are the unfiltered versions."}</span>
+      </div>
+      ${body}`;
+
+    app.querySelectorAll(".stile button[data-s]").forEach((b) => b.addEventListener("click", () => {
+      const id = b.dataset.s;
+      let next = ui.gSplits.includes(id) ? ui.gSplits.filter((x) => x !== id) : [...ui.gSplits, id];
+      if (!next.length) next = [id];
+      next = all.map((s) => s.id).filter((x) => next.includes(x));   // keep the matrix order
+      ui.gSplits = next;
+      location.hash = "#/graphs/" + next.join("+");
+    }));
+    const rerender = () => { const y = window.scrollY; VIEWS.graphs(); window.scrollTo(0, y); };
+    const gq = app.querySelector("#gq");
+    gq.addEventListener("input", () => { ui.gQ = gq.value; const p = gq.selectionStart; rerender(); const n = app.querySelector("#gq"); n.focus(); n.setSelectionRange(p, p); });
+    app.querySelector("#gsort").addEventListener("change", (e) => { ui.gSort = e.target.value; ui.gSortAuto = false; rerender(); });
+    app.querySelectorAll("[data-z]").forEach((b) => b.addEventListener("click", () => { ui.gSize = b.dataset.z; rerender(); }));
+    [["ghm", "hideHM"], ["gnp", "hideNP"], ["gjd", "hideJet"], ["gnn", "onlyNN"], ["gsp", "onlySep"]].forEach(([id, k]) =>
+      app.querySelector("#" + id).addEventListener("change", (e) => { ui[k] = e.target.checked; rerender(); }));
+    app.querySelectorAll("img[data-n]").forEach((img) => img.addEventListener("click", () => lightboxNav(items, +img.dataset.n)));
+
+    const btn = app.querySelector("#gdl");
+    btn.addEventListener("click", async () => {
+      const prog = app.querySelector("#gprog"), barEl = prog.querySelector("i"), txt = prog.querySelector("span");
+      const say = (i, n, label) => { barEl.style.width = (100 * i / Math.max(1, n)).toFixed(1) + "%"; txt.textContent = `${i} / ${n} · ${label}`; };
+      btn.disabled = true; prog.hidden = false; say(0, items.length, "loading pdf-lib");
+      try {
+        if (!window.PDFLib) await loadScript(PDFLIB_URL);
+        const { PDFDocument } = window.PDFLib;
+        const out = await PDFDocument.create();
+        const cache = new Map();
+        for (let n = 0; n < items.length; n++) {
+          const it = items[n];
+          let doc = cache.get(it.pdf);
+          if (!doc) {
+            const res = await fetch(it.pdf);
+            if (!res.ok) throw new Error(`${it.pdf}: HTTP ${res.status}`);
+            doc = await PDFDocument.load(await res.arrayBuffer());
+            cache.set(it.pdf, doc);
+            if (cache.size > 6) cache.delete(cache.keys().next().value);
+          }
+          const [p] = await out.copyPages(doc, [it.k]);
+          out.addPage(p);
+          say(n + 1, items.length, `${it.f.name} · ${it.sp.short}`);
+        }
+        say(items.length, items.length, "writing PDF");
+        out.setTitle(`SIG/BG Feature Explorer · ${RUN.name} · ${sel.map((s) => s.title).join(" + ")}`);
+        out.setSubject(`${list.length} features, ${items.length} pages, in the order shown on the Graphs page`);
+        out.setCreator("SIG/BG Feature Explorer (pdf-lib, in the browser)");
+        const bytes = await out.save();
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+        a.download = `sigbg_${RUN.name}_${sel.map((s) => s.id).join("+")}_${list.length}features.pdf`;
+        document.body.appendChild(a); a.click();
+        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+        txt.textContent = `done · ${items.length} pages · ${kb(bytes.length)}`;
+      } catch (err) {
+        txt.textContent = "failed: " + err.message;
+      }
+      btn.disabled = false;
+    });
+  };
+
   // ------------------------------------------------------------------ ALL PLOTS (every page of every PDF, current + archive)
   function loadArchivePlots(cb) {
     if (S.archivePlots) { cb(); return; }
@@ -844,10 +1093,11 @@ ${sel && sel.samples.bkg.met_median != null ? `
             <img class="plotimg" src="${esc(pg.src)}" alt="${esc(pg.label)}" loading="lazy" data-pdf="${esc(p.href)}"></figure>`).join("")}</div>`;
       } else body = `<p class="muted">No plots for this source. Run <code>python site_builder/build_site.py</code>.</p>`;
       app.innerHTML = `
-        <div class="eyebrow">every graph, every version</div>
-        <h1>All plots</h1>
+        <div class="eyebrow">every PDF, every version</div>
+        <h1>PDF browser</h1>
         <p class="lede">Every page of every PDF the pipeline produced, from the current run and from every archived run, viewable here and downloadable as the original PDF.
-        Pick a source, then a PDF, or search page titles (feature names, regions, selections) across the whole source.</p>
+        Pick a source, then a PDF, or search page titles (feature names, regions, selections) across the whole source.
+        To see one split across all features (e.g. every endcap signal-vs-background page), use <a href="#/graphs">Graphs</a>.</p>
         <div class="toolbar">
           <select id="psrc" aria-label="Source">${sources.map((s) => `<option value="${esc(s.id)}" ${s.id === src.id ? "selected" : ""}>${esc(s.label)}</option>`).join("")}</select>
           <select id="ppdf" aria-label="PDF" style="max-width:420px">${pdfs.map((p, i) => `<option value="${i}" ${i === sel ? "selected" : ""}>${esc(p.name)} (${p.pages.length})</option>`).join("")}</select>
@@ -1037,6 +1287,9 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
   }
 
   // ------------------------------------------------------------------ boot
+  const setHdr = () => { const h = document.querySelector("header.top"); if (h) document.documentElement.style.setProperty("--hdr", h.offsetHeight + "px"); };
+  setHdr();
+  window.addEventListener("resize", setHdr);
   initTheme();
   if (initRuns()) start();
 })();
