@@ -7,6 +7,7 @@ Reads   results/<run>/          one folder per finished kj_sigbg_mk4 run (copy o
 Writes  data/<run>.js           everything the pages show, as window.SIGBG.runs[<run>]
         data/index.js           run list + pipeline metadata
         img/<run>/...           every PDF page rendered to PNG (128-colour, ~60 KB each)
+        img/archive/...         every page of every archived run's PDFs (90 dpi), data/archive_plots.js
 
 The page itself (index.html, assets/) is hand-written and never touched by this script.
 Re-running is incremental: a PNG is only re-rendered when its PDF is newer.
@@ -293,6 +294,53 @@ def build_archive():
     return idx
 
 
+def archive_label(text, k):
+    L = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    for i, ln in enumerate(L):
+        if "region:" in ln:
+            segs = [x.strip() for x in ln.split("·") if x.strip()][:3]
+            if ln.lstrip().lower().startswith("region") and i > 0:
+                segs = [L[i - 1]] + segs
+            return "  ·  ".join(segs)[:140]
+    for ln in L[:6]:
+        if "·" in ln or (len(ln) > 6 and not re.fullmatch(r"[-+0-9.,e ]+", ln)):
+            return ln[:140]
+    return f"page {k}"
+
+
+def render_archive_plots(dpi, force):
+    """Render every page of every archived PDF -> img/archive/<folder>/...; return {folder: [pdf entries]}."""
+    import pymupdf
+    from PIL import Image
+    if not ARCHIVE.exists():
+        return {}
+    out = {}
+    pdfs = sorted(ARCHIVE.rglob("*.pdf"))
+    log(f"archive: rendering {len(pdfs)} PDFs at {dpi} dpi (incremental)")
+    for i, pdf in enumerate(pdfs, 1):
+        rel = pdf.relative_to(ARCHIVE)
+        folder = rel.parts[0]
+        base = IMG_OUT / "archive" / rel.with_suffix("")
+        base.parent.mkdir(parents=True, exist_ok=True)
+        doc = pymupdf.open(pdf)
+        pages = []
+        for k, page in enumerate(doc, 1):
+            png = base.parent / f"{base.name}_p{k}.png"
+            if force or not png.exists() or png.stat().st_mtime < pdf.stat().st_mtime:
+                pix = page.get_pixmap(dpi=dpi)
+                im = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
+                im.quantize(128, method=Image.Quantize.FASTOCTREE).save(png, optimize=True)
+            pages.append({"label": archive_label(page.get_text(), k), "src": png.relative_to(REPO).as_posix()})
+        doc.close()
+        sub = Path(*rel.parts[1:]).as_posix()
+        name = rel.parent.name if "features" in rel.parts else pdf.stem
+        out.setdefault(folder, []).append({"name": name, "path": sub, "href": pdf.relative_to(REPO).as_posix(), "pages": pages})
+        bar(i, len(pdfs), f"{folder}/{pdf.name}")
+    for folder, lst in out.items():   # summaries first, then region PDFs, then per-feature folders in rank order
+        lst.sort(key=lambda e: (0 if "SUMMARY" in e["path"] else 1 if "/" not in e["path"] else 2, e["path"]))
+    return out
+
+
 def attach_bkg_split(feats):
     """D(background 0-1 jets vs 2+ jets) and D(signal vs 2+-jet background) from the mk2 htmissScalar run."""
     bs, cmp_ = BKG_SPLIT_RUN / "bkg_split.csv", None
@@ -493,6 +541,8 @@ def main():
     ap.add_argument("--runs", nargs="*", default=None, help="run folder names under results/ (default: all)")
     ap.add_argument("--dpi", type=int, default=110)
     ap.add_argument("--force", action="store_true", help="re-render every PNG")
+    ap.add_argument("--archive-dpi", type=int, default=90, help="render resolution for archived runs")
+    ap.add_argument("--skip-archive-plots", action="store_true", help="do not render archived PDFs")
     args = ap.parse_args()
     try:
         import pymupdf  # noqa: F401
@@ -525,6 +575,13 @@ def main():
            json.dumps({"runs": runs, "default": runs[-1], "built": time.strftime("%Y-%m-%d %H:%M"),
                        "pipeline": meta, "archive": build_archive()}, separators=(",", ":")) + ";\n")
     (DATA_OUT / "index.js").write_text(idx, encoding="utf-8")
+    if not args.skip_archive_plots:
+        ap_ = render_archive_plots(args.archive_dpi, args.force)
+        js = ("window.SIGBG = window.SIGBG || {runs: {}};\nwindow.SIGBG.archivePlots = " +
+              json.dumps(ap_, separators=(",", ":")) + ";\n")
+        (DATA_OUT / "archive_plots.js").write_text(js, encoding="utf-8")
+        log(f"wrote data/archive_plots.js ({len(js) / 1e6:.2f} MB, "
+            f"{sum(len(p['pages']) for v in ap_.values() for p in v)} pages)")
     log("wrote data/index.js")
     log("done. Open index.html in a browser, or push and enable GitHub Pages (branch main, folder / root).")
 

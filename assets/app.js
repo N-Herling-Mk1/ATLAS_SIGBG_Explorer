@@ -191,6 +191,7 @@
           ["exclusions", "Exclusions", "What was left out and why; build a new exclude_features.txt."],
           ["methods", "Metrics", "Definitions of every number on this site."],
           ["files", "Files & code", "Download every result file and the code to rerun it."],
+          ["plots", "All plots", "Every page of every PDF, current and archived: browse or search all of them."],
           ["archive", "Archive", "mk1 → mk4: every script version and every run, with what changed."],
         ].map(([h, t, d]) => `<a class="card link" href="#/${h}"><h3>${t} <span class="arrow">→</span></h3><p class="muted small">${d}</p></a>`).join("")}
       </div>
@@ -790,6 +791,82 @@ ${sel && sel.samples.bkg.met_median != null ? `
   };
 
 
+
+  // ------------------------------------------------------------------ ALL PLOTS (every page of every PDF, current + archive)
+  function loadArchivePlots(cb) {
+    if (S.archivePlots) { cb(); return; }
+    const s = document.createElement("script");
+    s.src = "data/archive_plots.js";
+    s.onload = cb;
+    s.onerror = () => { S.archivePlots = {}; cb(); };
+    document.head.appendChild(s);
+  }
+  function plotSources() {
+    const src = [{ id: RUN.name, label: `${RUN.name} · current`, status: "current" }];
+    ((I.archive && I.archive.entries) || []).forEach((e) => (e.runs || []).forEach((r) => {
+      if (!r.folder.startsWith("..")) src.push({ id: r.folder, label: r.label, status: r.status, note: r.note });
+    }));
+    return src;
+  }
+  function currentRunPdfs() {
+    const out = RUN.summaries.map((s) => ({ name: s.block + " summary", path: s.pdf.split("/").slice(2).join("/"), href: s.pdf, pages: s.pages }));
+    byRank("endcap").forEach((f) => {
+      if (f.plots_B) out.push({ name: f.name + " · MC vs data", path: f.plots_B.pdf.split("/").slice(2).join("/"), href: f.plots_B.pdf, pages: f.plots_B.pages.map((p) => ({ label: `${f.name}  ·  ${p.label}`, src: p.src })) });
+      if (f.plots_A) out.push({ name: f.name + " · barrel vs endcap", path: f.plots_A.pdf.split("/").slice(2).join("/"), href: f.plots_A.pdf, pages: f.plots_A.pages.map((p) => ({ label: `${f.name}  ·  ${p.label}`, src: p.src })) });
+    });
+    return out;
+  }
+  VIEWS.plots = function (arg) {
+    loadArchivePlots(() => {
+      const [srcId, pdfIdx] = (arg || "").split("|");
+      const sources = plotSources();
+      const src = sources.find((s) => s.id === srcId) || sources[0];
+      const pdfs = src.id === RUN.name ? currentRunPdfs() : (S.archivePlots[src.id] || []);
+      const nPages = pdfs.reduce((a, p) => a + p.pages.length, 0);
+      const sel = Math.min(Math.max(0, +pdfIdx || 0), Math.max(0, pdfs.length - 1));
+      const q = (ui.plotQ || "").trim().toLowerCase();
+      let body;
+      if (q) {
+        const hits = [];
+        pdfs.forEach((p) => p.pages.forEach((pg, k) => { if ((pg.label + " " + p.name).toLowerCase().includes(q)) hits.push({ p, pg, k }); }));
+        const shown = hits.slice(0, ui.plotMax || 60);
+        body = `<p class="muted small">${hits.length} matching pages${hits.length > shown.length ? `, showing ${shown.length}` : ""}.</p>
+          <div class="gallery">${shown.map((h) => `<figure><img src="${esc(h.pg.src)}" alt="${esc(h.pg.label)}" loading="lazy" data-pdf="${esc(h.p.href)}"><figcaption>${esc(h.pg.label)}<br><span class="muted">${esc(h.p.path)} · p${h.k + 1}</span></figcaption></figure>`).join("")}</div>
+          ${hits.length > shown.length ? `<p style="margin-top:12px"><button class="btn" type="button" id="more">show ${Math.min(60, hits.length - shown.length)} more</button></p>` : ""}`;
+      } else if (pdfs.length) {
+        const p = pdfs[sel];
+        body = `<div class="plotbar" style="border:1px solid var(--grid);border-radius:6px 6px 0 0">
+            <div><b class="mono">${esc(p.path)}</b> <span class="muted small">· ${p.pages.length} pages</span></div>
+            <div><button class="btn sm" type="button" data-step="-1" ${sel ? "" : "disabled"}>← prev PDF</button>
+            <button class="btn sm" type="button" data-step="1" ${sel < pdfs.length - 1 ? "" : "disabled"}>next PDF →</button>
+            <a class="btn sm" href="${esc(p.href)}" download>download PDF</a></div></div>
+          <div class="pagestack">${p.pages.map((pg, k) => `<figure><figcaption><span class="chip">p${k + 1}</span> ${esc(pg.label)}</figcaption>
+            <img class="plotimg" src="${esc(pg.src)}" alt="${esc(pg.label)}" loading="lazy" data-pdf="${esc(p.href)}"></figure>`).join("")}</div>`;
+      } else body = `<p class="muted">No plots for this source. Run <code>python site_builder/build_site.py</code>.</p>`;
+      app.innerHTML = `
+        <div class="eyebrow">every graph, every version</div>
+        <h1>All plots</h1>
+        <p class="lede">Every page of every PDF the pipeline produced, from the current run and from every archived run, viewable here and downloadable as the original PDF.
+        Pick a source, then a PDF, or search page titles (feature names, regions, selections) across the whole source.</p>
+        <div class="toolbar">
+          <select id="psrc" aria-label="Source">${sources.map((s) => `<option value="${esc(s.id)}" ${s.id === src.id ? "selected" : ""}>${esc(s.label)}</option>`).join("")}</select>
+          <select id="ppdf" aria-label="PDF" style="max-width:420px">${pdfs.map((p, i) => `<option value="${i}" ${i === sel ? "selected" : ""}>${esc(p.name)} (${p.pages.length})</option>`).join("")}</select>
+          <input type="search" id="pq" placeholder="search page titles in this source" value="${esc(ui.plotQ || "")}" aria-label="Search pages">
+          <span class="count">${pdfs.length} PDFs · ${nPages} pages</span>
+        </div>
+        ${src.status && src.status !== "current" ? `<div class="callout ${src.status === "null result" ? "" : "warn"}" style="margin-top:0"><p><span class="chip">${esc(src.status)}</span> ${esc(src.note || "")}</p></div>` : ""}
+        ${body}`;
+      app.querySelector("#psrc").addEventListener("change", (e) => { ui.plotQ = ""; ui.plotMax = 60; location.hash = "#/plots/" + encodeURIComponent(e.target.value); });
+      app.querySelector("#ppdf") && app.querySelector("#ppdf").addEventListener("change", (e) => { ui.plotQ = ""; location.hash = "#/plots/" + encodeURIComponent(src.id + "|" + e.target.value); });
+      app.querySelectorAll("[data-step]").forEach((b) => b.addEventListener("click", () => { location.hash = "#/plots/" + encodeURIComponent(src.id + "|" + (sel + +b.dataset.step)); }));
+      const pq = app.querySelector("#pq");
+      pq.addEventListener("input", () => { ui.plotQ = pq.value; ui.plotMax = 60; const pos = pq.selectionStart; VIEWS.plots(arg); setTimeout(() => { const n = app.querySelector("#pq"); if (n) { n.focus(); n.setSelectionRange(pos, pos); } }, 0); });
+      const more = app.querySelector("#more");
+      if (more) more.addEventListener("click", () => { ui.plotMax = (ui.plotMax || 60) + 60; VIEWS.plots(arg); });
+      app.querySelectorAll("img[data-pdf]").forEach((img) => img.addEventListener("click", () => lightbox(img.src, img.alt, img.dataset.pdf)));
+    });
+  };
+
   // ------------------------------------------------------------------ ARCHIVE
   VIEWS.archive = function () {
     const A = I.archive;
@@ -810,7 +887,8 @@ ${sel && sel.samples.bkg.met_median != null ? `
             ${(e.runs || []).map((r) => `
               <div class="tl-run">
                 <div class="tl-head"><b class="mono">${esc(r.label)}</b> ${badge(r.status)}
-                  <span class="muted small">${r.href_root ? esc(r.href_root) + "/" : ""} · ${r.files.length + r.n_feature_pdfs} files · ${kb(r.bytes || 0)}</span></div>
+                  <span class="muted small">${r.href_root ? esc(r.href_root) + "/" : ""} · ${r.files.length + r.n_feature_pdfs} files · ${kb(r.bytes || 0)}</span>
+                  <a class="btn sm primary" href="#/plots/${encodeURIComponent(r.folder.startsWith("..") ? RUN.name : r.folder)}">view all plots →</a></div>
                 <p class="small" style="margin:6px 0 8px">${esc(r.note)}</p>
                 ${r.folder.startsWith("..") ? `<p class="small"><a href="#/files">Browse on Files &amp; code →</a></p>` : `
                 <details><summary>files (${r.files.length})</summary>
