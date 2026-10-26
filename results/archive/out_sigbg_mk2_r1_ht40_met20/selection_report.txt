@@ -1,0 +1,62 @@
+cut            htmiss_NOSYS >= 40 GeV  =  40000 file units  (units MeV; signal median 158,509.0 file units)
+cut            met_met_NOSYS >= 20 GeV  =  20000 file units  (units MeV; signal median 159,665.4 file units)
+
+per-file edges, in GeV (file units / 1000):
+  file          variable                   min     q0.1%       q1%    median   % < cut
+  bkg           htmissScalar_NOSYS        0.00      0.00      0.00     26.69          
+  mH125_mS15    htmissScalar_NOSYS       40.76     41.09     43.13    126.41          
+  mH125_mS55    htmissScalar_NOSYS       40.05     40.20     42.59    162.50          
+  mH200_mS50    htmissScalar_NOSYS       40.08     40.14     42.92    127.62          
+  mH400_mS100   htmissScalar_NOSYS       40.20     41.49     48.66    183.64          
+  mH600_mS150   htmissScalar_NOSYS       40.03     40.43     44.31    226.81          
+  mH1000_mS275  htmissScalar_NOSYS       40.49     40.81     47.26    388.57          
+
+  bkg           htmiss_NOSYS              0.00      0.00      0.00     18.94   100.00%
+  mH125_mS15    htmiss_NOSYS             40.36     40.37     41.47     86.20     0.00%
+  mH125_mS55    htmiss_NOSYS             40.05     40.10     40.74    125.69     0.00%
+  mH200_mS50    htmiss_NOSYS             40.08     40.14     41.05     91.18     0.00%
+  mH400_mS100   htmiss_NOSYS             40.20     40.58     44.34    132.91     0.00%
+  mH600_mS150   htmiss_NOSYS             40.00     40.22     41.96    164.49     0.00%
+  mH1000_mS275  htmiss_NOSYS             40.02     40.77     44.75    279.53     0.00%
+
+  bkg           met_met_NOSYS             0.00      0.42      1.53     18.91    52.46%
+  mH125_mS15    met_met_NOSYS            21.55     22.50     24.28     88.31     0.00%
+  mH125_mS55    met_met_NOSYS            23.10     23.28     35.81    130.93     0.00%
+  mH200_mS50    met_met_NOSYS            20.08     22.03     29.15     92.50     0.00%
+  mH400_mS100   met_met_NOSYS            20.07     22.43     35.05    132.38     0.00%
+  mH600_mS150   met_met_NOSYS            20.26     21.59     32.90    164.70     0.00%
+  mH1000_mS275  met_met_NOSYS            22.32     25.21     39.91    279.95     0.00%
+
+  bkg           jet_pt_max_NOSYS          0.00      0.00      0.00     26.58          
+  mH125_mS15    jet_pt_max_NOSYS          0.00      0.00     26.46     75.00          
+  mH125_mS55    jet_pt_max_NOSYS         28.41     29.45     34.30    106.77          
+  mH200_mS50    jet_pt_max_NOSYS         25.75     27.46     31.08     81.56          
+  mH400_mS100   jet_pt_max_NOSYS         27.04     28.64     35.26    117.68          
+  mH600_mS150   jet_pt_max_NOSYS         25.85     28.46     34.42    140.79          
+  mH1000_mS275  jet_pt_max_NOSYS         26.68     30.42     38.95    231.53          
+
+events per file and region, before and after the cut:
+  file          region       all ht40_met20    kept    below invalid
+  bkg           endcap    34,970        0    0.0%   34,970       0
+  bkg           barrel     1,089        0    0.0%    1,089       0
+  bkg           all       36,059        0    0.0%   36,059       0
+  mH125_mS15    endcap       411      411  100.0%        0       0
+  mH125_mS15    barrel       159      159  100.0%        0       0
+  mH125_mS15    all          570      570  100.0%        0       0
+  mH125_mS55    endcap       281      281  100.0%        0       0
+  mH125_mS55    barrel       142      142  100.0%        0       0
+  mH125_mS55    all          423      423  100.0%        0       0
+  mH200_mS50    endcap     1,071    1,071  100.0%        0       0
+  mH200_mS50    barrel       449      449  100.0%        0       0
+  mH200_mS50    all        1,520    1,520  100.0%        0       0
+  mH400_mS100   endcap     2,648    2,648  100.0%        0       0
+  mH400_mS100   barrel     1,144    1,144  100.0%        0       0
+  mH400_mS100   all        3,792    3,792  100.0%        0       0
+  mH600_mS150   endcap     2,882    2,882  100.0%        0       0
+  mH600_mS150   barrel     1,608    1,608  100.0%        0       0
+  mH600_mS150   all        4,490    4,490  100.0%        0       0
+  mH1000_mS275  endcap     2,703    2,703  100.0%        0       0
+  mH1000_mS275  barrel     1,485    1,485  100.0%        0       0
+  mH1000_mS275  all        4,188    4,188  100.0%        0       0
+
+all signal files keep >= 99% of events after the cut

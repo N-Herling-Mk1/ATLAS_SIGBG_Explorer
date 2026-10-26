@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIG/BG Feature Explorer</title>
+<meta name="description" content="Signal/background feature study for the ATLAS Run-3 MSVtx LLP search: KS separation, barrel vs endcap, correlation blocks, prototype NN feature sets.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/brand/icon_32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/brand/icon_192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/brand/icon_180.png">
+<link rel="shortcut icon" href="favicon.ico">
+<meta name="theme-color" content="#050607">
+<meta property="og:title" content="SIG/BG Feature Explorer">
+<meta property="og:description" content="Which inputs separate signal from background in the ATLAS Run-3 MSVtx LLP search, and which only appear to.">
+<meta property="og:image" content="assets/brand/social_preview_1280x640.png">
+<script>
+  /* theme before first paint: dark (default) or light, remembered per browser */
+  (function () { try { var t = localStorage.getItem("sigbg.theme"); if (t === "light") document.documentElement.setAttribute("data-theme", "light"); } catch (e) {} })();
+</script>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="#/" aria-label="SIG/BG Feature Explorer, overview">
+      <img class="brand-icon" src="assets/brand/icon_64.png" alt="" width="34" height="34">
+      <span class="brand-mark"><b>S</b>IG<span class="slash">/</span><b>B</b>G</span>
+      <span class="brand-sub">FEATURE EXPLORER <em>mk1</em></span>
+    </a>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch colour theme">light</button>
+    <label class="run-pick">run
+      <select id="runSelect" aria-label="Result set"></select>
+    </label>
+  </div>
+  <nav class="tabs" id="tabs" aria-label="Sections">
+    <a href="#/">Overview</a>
+    <a href="#/findings">Findings</a>
+    <a href="#/rankings">Rankings</a>
+    <a href="#/feature">Feature</a>
+    <a href="#/regions">Barrel vs endcap</a>
+    <a href="#/correlation">Correlation</a>
+    <a href="#/prototypes">Prototypes</a>
+    <a href="#/exclusions">Exclusions</a>
+    <a href="#/summaries">Summaries</a>
+    <a href="#/methods">Metrics</a>
+    <a href="#/files">Files &amp; code</a>
+    <a href="#/archive">Archive</a>
+  </nav>
+</header>
+
+<main id="app" tabindex="-1">
+  <p class="loading">Loading…</p>
+</main>
+
+<footer class="foot">
+  <div>kj_sigbg_mk4 · site builder mk1 · <span id="builtStamp"></span></div>
+  <div>Real data only. Plots are rendered from the pipeline's own PDFs; every PDF is downloadable on its page.</div>
+</footer>
+
+<div id="tip" class="tip" role="tooltip" hidden></div>
+
+<script src="data/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

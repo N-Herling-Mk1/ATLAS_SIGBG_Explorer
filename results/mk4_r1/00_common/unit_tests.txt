@@ -1,0 +1,14 @@
+==============================================================================
+UNIT TEST  HTmiss selection:  background htmiss_NOSYS < 40 GeV,  signal htmiss_NOSYS >= 40 GeV
+==============================================================================
+units: MeV (signal median 158.5 GeV)
+  file                n invalid   min GeV   max GeV violating  result
+  bkg            36,059       0      0.00     40.00         0  PASS
+  mH125_mS15        570       0     40.36    768.98         0  PASS
+  mH125_mS55        423       0     40.05    648.06         0  PASS
+  mH200_mS50      1,520       0     40.08   1101.73         0  PASS
+  mH400_mS100     3,792       0     40.20   1191.45         0  PASS
+  mH600_mS150     4,490       0     40.00   1321.18         0  PASS
+  mH1000_mS275    4,188       0     40.02   1447.43         0  PASS
+
+RESULT: PASS -- background and signal sit on opposite sides of the cut, as designed

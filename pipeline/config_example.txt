@@ -1,0 +1,12 @@
+# config_example.txt  --  copy this file to config.txt (same folder) and edit the path.
+# config.txt is git-ignored, so your local path never goes into the repo.
+#
+# DATA = the folder holding these 7 files:
+#   DataHTMissLow_train_data24_cleaned.csv
+#   HSS_mH125_mS15_ct580_cleaned.csv     HSS_mH125_mS55_ct5320_cleaned.csv
+#   HSS_mH200_mS50_ct1255_cleaned.csv    HSS_mH400_mS100_ct1610_cleaned.csv
+#   HSS_mH600_mS150_ct3310_cleaned.csv   HSS_mH1000_mS275_ct2399_cleaned.csv
+#
+# Alternatives: run with --data <folder>, or set the environment variable KJ_SIGBG_DATA.
+
+DATA = C:\path\to\run3_csv_for_nathan

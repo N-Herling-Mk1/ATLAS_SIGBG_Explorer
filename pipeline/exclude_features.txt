@@ -1,0 +1,14 @@
+# exclude_features.txt  --  EDITABLE: features you want left out of kj_sigbg_mk4.py
+#
+# One exact column name or glob per line, e.g.   el_*     msvtx_nRPC*     MS1Vtx_l1hcal
+# '#' starts a comment.  Blank lines are ignored.  Matching is case-sensitive.
+#
+# Already removed by the script itself (HARD_EXCLUDE, do not repeat them here):
+#   labels, NN scores, all weights / scale factors, run/event/channel numbers,
+#   htmiss_NOSYS and met_met_NOSYS (the HTmiss split, see Findings), and the region
+#   selectors msvtx_inBarrel_NOSYS / msvtx_inEndcaps_NOSYS.
+# Columns not present in all 7 files are never scored.
+#
+# Every exclusion is echoed in <output>/00_common/excluded_report.txt under "user".
+# The site's Exclusions page can generate a new copy of this file for you.
+

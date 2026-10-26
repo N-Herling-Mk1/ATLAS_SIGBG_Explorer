@@ -1,0 +1,135 @@
+41 groups of rank-identical columns (same missing pattern, same value
+ordering in every file -> same KS D everywhere); kept the first name, dropped the rest
+
+MS1Vtx_avg_clusE_raw
+    = MS1Vtx_barrel_avg_clusE
+    = MS1Vtx_endcap_avg_clusE
+MS1Vtx_avg_clustime_raw
+    = MS1Vtx_barrel_avg_clustime
+    = MS1Vtx_endcap_avg_clustime
+MS1Vtx_barrel_hits_ntot
+    = MS1Vtx_barrel_hits_ntot_raw
+MS1Vtx_endcap_hits_ntot
+    = MS1Vtx_endcap_hits_ntot_raw
+MS1Vtx_maxclusE_raw
+    = MS1Vtx_barrel_maxclusE
+    = MS1Vtx_endcap_maxclusE
+MS1Vtx_maxclustime_raw
+    = MS1Vtx_barrel_maxclustime
+    = MS1Vtx_endcap_maxclustime
+MS1Vtx_mindR_jetcut_raw
+    = MS1Vtx_barrel_mindR_jetcut
+    = MS1Vtx_endcap_mindR_jetcut
+MS1Vtx_rms_clusE_raw
+    = MS1Vtx_barrel_rms_clusE
+    = MS1Vtx_endcap_rms_clusE
+MS1Vtx_rms_clustime_raw
+    = MS1Vtx_barrel_rms_clustime
+    = MS1Vtx_endcap_rms_clustime
+MSTracklet_barrel_avg_dR
+    = MSTracklet_barrel_avg_dR_raw
+MSTracklet_barrel_rms_dR
+    = MSTracklet_barrel_rms_dR_raw
+MSTracklet_endcap_avg_dR
+    = MSTracklet_endcap_avg_dR_raw
+MSTracklet_endcap_rms_dR
+    = MSTracklet_endcap_rms_dR_raw
+MSVtx_MET_dphi_raw
+    = MSVtx_MET_barrel_dphi
+    = MSVtx_MET_endcap_dphi
+MSeg_barrel_avg_dR
+    = MSeg_barrel_avg_dR_raw
+MSeg_barrel_rms_dR
+    = MSeg_barrel_rms_dR_raw
+MSeg_endcap_avg_dR
+    = MSeg_endcap_avg_dR_raw
+MSeg_endcap_rms_dR
+    = MSeg_endcap_rms_dR_raw
+coreFlags
+    = globalTriggerMatch_NOSYS
+    = trigPassed_HLT_2mu14_L12MU8F
+    = trigPassed_HLT_j460_wildcard
+    = trigPassed_HLT_mu50_L1MU14FCH
+    = trigPassed_HLT_e300_etcut_L1eEM26M
+    = trigPassed_HLT_e140_lhloose_L1eEM26M
+    = trigPassed_HLT_e60_lhmedium_L1eEM26M
+    = trigPassed_HLT_2e17_lhvloose_L12eEM18M
+    = trigPassed_HLT_2e24_lhvloose_L12eEM24L
+    = trigPassed_HLT_mu24_ivarmedium_L1MU14FCH
+    = trigPassed_HLT_e26_lhtight_ivarloose_L1eEM26M
+msvtx_caloClusterSumE
+    = summedCaloClusters/clusterSumE
+    = MS1Vtx_clusE_raw
+    = MS1Vtx_barrel_clusE
+    = MS1Vtx_endcap_clusE
+msvtx_caloClusterSumPt
+    = summedCaloClusters/clusterSumPt
+msvtx_caloClusterSumPtScalar
+    = summedCaloClusters/clusterScalarSumPt
+msvtx_el1ecal
+    = summedCaloClusters/el1ecal
+    = MS1Vtx_l1ecal_raw
+    = MS1Vtx_barrel_l1ecal
+    = MS1Vtx_endcap_l1ecal
+msvtx_el1hcal
+    = summedCaloClusters/el1hcal
+    = MS1Vtx_l1hcal_raw
+    = MS1Vtx_barrel_l1hcal
+    = MS1Vtx_endcap_l1hcal
+msvtx_el2ecal
+    = summedCaloClusters/el2ecal
+    = MS1Vtx_l2ecal_raw
+    = MS1Vtx_barrel_l2ecal
+    = MS1Vtx_endcap_l2ecal
+msvtx_el2hcal
+    = summedCaloClusters/el2hcal
+    = MS1Vtx_l2hcal_raw
+    = MS1Vtx_barrel_l2hcal
+    = MS1Vtx_endcap_l2hcal
+msvtx_el3ecal
+    = summedCaloClusters/el3ecal
+    = MS1Vtx_l3ecal_raw
+    = MS1Vtx_barrel_l3ecal
+    = MS1Vtx_endcap_l3ecal
+msvtx_el3hcal
+    = summedCaloClusters/el3hcal
+    = MS1Vtx_l3hcal_raw
+    = MS1Vtx_barrel_l3hcal
+    = MS1Vtx_endcap_l3hcal
+msvtx_el4ecal
+    = summedCaloClusters/el4ecal
+    = MS1Vtx_l4ecal_raw
+    = MS1Vtx_barrel_l4ecal
+    = MS1Vtx_endcap_l4ecal
+msvtx_el4hcal
+    = summedCaloClusters/el4hcal
+    = MS1Vtx_l4hcal_raw
+    = MS1Vtx_barrel_l4hcal
+    = MS1Vtx_endcap_l4hcal
+msvtx_nCaloClusters_Egt300MeV_NOSYS
+    = summedCaloClusters/nClustersAboveThreshold
+msvtx_nCaloClusters_NOSYS
+    = summedCaloClusters/nClusters
+msvtx_nTrk
+    = MS1Vtx_nTracklet_raw
+    = MS1Vtx_barrel_nTracklet
+    = MS1Vtx_endcap_nTracklet
+msvtx_trackSoftSumNTracks
+    = msvtx_trackSoftSumPtStats/nTracks
+msvtx_trackSoftSumPt_NOSYS
+    = msvtx_trackSoftSumPtStats/sumPt
+    = MS1Vtx_sumTrackPt0p2Cone_raw
+    = MS1Vtx_barrel_sumTrackPt0p2Cone
+    = MS1Vtx_endcap_sumTrackPt0p2Cone
+nBOL_NOSYS
+    = msegUnAssoc_counts/nBOL
+nEOL_NOSYS
+    = msegUnAssoc_counts/nEOL
+nMSeg_ratio_BIBM
+    = nMSeg_ratio_BIBM_raw
+nMSeg_ratio_EIEM
+    = nMSeg_ratio_EIEM_raw
+track_scalar_sum_pt_barrel
+    = track_scalar_sum_pt_barrel_raw
+track_scalar_sum_pt_endcap
+    = track_scalar_sum_pt_endcap_raw

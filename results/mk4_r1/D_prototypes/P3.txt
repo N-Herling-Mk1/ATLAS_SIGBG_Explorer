@@ -1,0 +1,32 @@
+# prototype P3 -- inclusive P1 with region flag
+# written by kj_sigbg_mk4 2026-10-25 18:10
+
+# NN1 inclusive (15)
+msvtx_caloClusterSumE
+MS1Vtx_rms_clusE_raw
+msvtx_el3ecal
+msvtx_el4ecal
+msvtx_el1ecal
+msvtx_el1hcal
+msvtx_el2hcal
+MS1Vtx_mindR_jetcut_raw
+track_scalar_sum_pt_endcap
+nBOL_NOSYS
+MS1Vtx_maxclusE_raw
+msegUnAssoc_counts/nBML
+track_scalar_sum_pt_barrel
+nMSeg_ratio_BIBM
+msvtx_el3hcal
+
+# NN2 inclusive (10)
+MS1Vtx_endcap_hits_ntot
+msvtx_nTrk
+MSeg_endcap_avg_dR
+MSTracklet_endcap_avg_dR
+MSVtx_MET_dphi_raw
+MS1Vtx_maxclustime_raw
+MS1Vtx_rms_clustime_raw
+MS1Vtx_avg_clustime_raw
+MS1Vtx_barrel_hits_ntot
+MSeg_barrel_avg_dR
+

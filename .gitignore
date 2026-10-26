@@ -1,0 +1,10 @@
+# local settings and data never go into git
+pipeline/config.txt
+tools/config.txt
+*.csv.gz
+__pycache__/
+*.pyc
+.venv/
+venv/
+# raw pipeline output lands next to the script; copy a finished run into results/ on purpose
+pipeline/out_sigbg_*/

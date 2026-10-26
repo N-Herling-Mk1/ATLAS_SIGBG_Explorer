@@ -1,0 +1,6 @@
+# exclude_features.txt  --  features to leave out of kj_sigbg_mk1.py and kj_sigbg_mk2.py
+# One exact name or glob per line (e.g.  el_*   or   MS1Vtx_l1hcal).  '#' starts a comment.
+# Labels, NN outputs, weights, event ids and leakage variables are already excluded in the
+# script (HARD_EXCLUDE); signal-only columns are never scored. List only what you add here.
+# Every exclusion is echoed in the output folder, excluded_report.txt.
+

@@ -1,0 +1,86 @@
+flag-like candidates:
+  MS1Vtx_barrel_avg_clusE
+  MS1Vtx_barrel_avg_clustime
+  MS1Vtx_barrel_clusE
+  MS1Vtx_barrel_hits_ntot
+  MS1Vtx_barrel_hits_ntot_raw
+  MS1Vtx_barrel_l1ecal
+  MS1Vtx_barrel_l1hcal
+  MS1Vtx_barrel_l2ecal
+  MS1Vtx_barrel_l2hcal
+  MS1Vtx_barrel_l3ecal
+  MS1Vtx_barrel_l3hcal
+  MS1Vtx_barrel_l4ecal
+  MS1Vtx_barrel_l4hcal
+  MS1Vtx_barrel_maxclusE
+  MS1Vtx_barrel_maxclustime
+  MS1Vtx_barrel_mindR_jetcut
+  MS1Vtx_barrel_nTracklet
+  MS1Vtx_barrel_rms_clusE
+  MS1Vtx_barrel_rms_clustime
+  MS1Vtx_barrel_sumTrackPt0p2Cone
+  MS1Vtx_endcap_avg_clusE
+  MS1Vtx_endcap_avg_clustime
+  MS1Vtx_endcap_clusE
+  MS1Vtx_endcap_hits_ntot
+  MS1Vtx_endcap_hits_ntot_raw
+  MS1Vtx_endcap_l1ecal
+  MS1Vtx_endcap_l1hcal
+  MS1Vtx_endcap_l2ecal
+  MS1Vtx_endcap_l2hcal
+  MS1Vtx_endcap_l3ecal
+  MS1Vtx_endcap_l3hcal
+  MS1Vtx_endcap_l4ecal
+  MS1Vtx_endcap_l4hcal
+  MS1Vtx_endcap_maxclusE
+  MS1Vtx_endcap_maxclustime
+  MS1Vtx_endcap_mindR_jetcut
+  MS1Vtx_endcap_nTracklet
+  MS1Vtx_endcap_rms_clusE
+  MS1Vtx_endcap_rms_clustime
+  MS1Vtx_endcap_sumTrackPt0p2Cone
+  MSTracklet_barrel_avg_dR
+  MSTracklet_barrel_avg_dR_raw
+  MSTracklet_barrel_rms_dR
+  MSTracklet_barrel_rms_dR_raw
+  MSTracklet_endcap_avg_dR
+  MSTracklet_endcap_avg_dR_raw
+  MSTracklet_endcap_rms_dR
+  MSTracklet_endcap_rms_dR_raw
+  MSVtx_MET_barrel_dphi
+  MSVtx_MET_endcap_dphi
+  MSeg_barrel_avg_dR
+  MSeg_barrel_avg_dR_raw
+  MSeg_barrel_rms_dR
+  MSeg_barrel_rms_dR_raw
+  MSeg_endcap_avg_dR
+  MSeg_endcap_avg_dR_raw
+  MSeg_endcap_rms_dR
+  MSeg_endcap_rms_dR_raw
+  msvtx_inBarrel_NOSYS
+  msvtx_inEndcaps_NOSYS
+  track_scalar_sum_pt_barrel
+  track_scalar_sum_pt_barrel_raw
+  track_scalar_sum_pt_endcap
+  track_scalar_sum_pt_endcap_raw
+
+vertex-eta candidates:
+  msvtx_eta_NOSYS
+
+CHOSEN: ('msvtx_inBarrel_NOSYS', 'flag', 'msvtx_inEndcaps_NOSYS')
+
+barrel = msvtx_inBarrel_NOSYS == 1;  endcap = msvtx_inEndcaps_NOSYS == 1
+
+  bkg           n  36,059  barrel   1,089  endcap  34,970  both     0  neither      0
+
+  mH125_mS15    n     570  barrel     159  endcap     411  both     0  neither      0
+
+  mH125_mS55    n     423  barrel     142  endcap     281  both     0  neither      0
+
+  mH200_mS50    n   1,520  barrel     449  endcap   1,071  both     0  neither      0
+
+  mH400_mS100   n   3,792  barrel   1,144  endcap   2,648  both     0  neither      0
+
+  mH600_mS150   n   4,490  barrel   1,608  endcap   2,882  both     0  neither      0
+
+  mH1000_mS275  n   4,188  barrel   1,485  endcap   2,703  both     0  neither      0

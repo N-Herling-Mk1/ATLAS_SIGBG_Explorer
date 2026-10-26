@@ -1,0 +1,57 @@
+# prototype P2 -- P1 + strong unused (non-HTmiss) features
+# written by kj_sigbg_mk4 2026-10-25 18:10
+
+# NN1 endcap (9)
+msvtx_caloClusterSumE
+MS1Vtx_rms_clusE_raw
+msvtx_el3ecal
+msvtx_el4ecal
+msvtx_el1ecal
+msvtx_el1hcal
+msvtx_el2hcal
+MS1Vtx_mindR_jetcut_raw
+track_scalar_sum_pt_endcap
+
+# NN2 endcap (14)
+MS1Vtx_endcap_hits_ntot
+msvtx_nTrk
+MSeg_endcap_avg_dR
+MSTracklet_endcap_avg_dR
+MSVtx_MET_dphi_raw
+MS1Vtx_maxclustime_raw
+MS1Vtx_rms_clustime_raw
+MS1Vtx_avg_clustime_raw
+msvtx_nTGCOuterStation
+msvtx_nTGC
+msvtx_nTGCExtendedStation
+msvtx_nMDTMiddleStation
+msvtx_nTGCMiddleStation
+msvtx_nMDTOuterStation
+
+# NN1 barrel (14)
+MS1Vtx_mindR_jetcut_raw
+nBOL_NOSYS
+MS1Vtx_maxclusE_raw
+msvtx_el3ecal
+msegUnAssoc_counts/nBML
+track_scalar_sum_pt_barrel
+nMSeg_ratio_BIBM
+msvtx_el2hcal
+msvtx_el4ecal
+msvtx_el3hcal
+msvtx_el1ecal
+msegUnAssoc_counts/nEML
+nMSeg_ratio_EIEM
+nEOL_NOSYS
+
+# NN2 barrel (9)
+MS1Vtx_barrel_hits_ntot
+msvtx_nTrk
+MSVtx_MET_dphi_raw
+MSeg_barrel_avg_dR
+MS1Vtx_maxclustime_raw
+MS1Vtx_rms_clustime_raw
+msvtx_nRPCOuterStation
+msvtx_nRPC
+msvtx_nRPCMiddleStation
+

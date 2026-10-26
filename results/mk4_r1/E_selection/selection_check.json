@@ -1,0 +1,286 @@
+{
+ "source": "console checks 2026-10-26, transcribed; regenerate with tools/selection_check.py; MET edge from results/archive/out_sigbg_mk2_r1_ht40_met20/selection_report.txt",
+ "written": "2026-10-26 00:45",
+ "disjoint_in_htmiss": true,
+ "bkg_htmiss_max": 40.0,
+ "sig_htmiss_min": 40.0,
+ "samples": {
+  "bkg": {
+   "n": 36059,
+   "htmiss_min": 0.0,
+   "htmiss_max": 40.0,
+   "htmissScalar_min": 0.0,
+   "jet_pt_max_min": 0.0,
+   "jet_pt_max_q01": 0.0,
+   "jets": {
+    "all": {
+     "n": 36059,
+     "counts": {
+      "0": 15429,
+      "1": 13020,
+      "2": 4529,
+      "3": 2023,
+      "4": 1058
+     }
+    }
+   },
+   "crosstab_jets_x_scalar": {
+    "0": {
+     "~0": 15429,
+     "1-40": 0,
+     ">40": 0
+    },
+    "1": {
+     "~0": 0,
+     "1-40": 13020,
+     ">40": 0
+    },
+    "2": {
+     "~0": 0,
+     "1-40": 0,
+     ">40": 4529
+    },
+    "3": {
+     "~0": 0,
+     "1-40": 0,
+     ">40": 2023
+    },
+    "4": {
+     "~0": 0,
+     "1-40": 0,
+     ">40": 1058
+    }
+   },
+   "scalar_bins": [
+    {
+     "lo": -1,
+     "hi": 1,
+     "n": 15429
+    },
+    {
+     "lo": 1,
+     "hi": 10,
+     "n": 0
+    },
+    {
+     "lo": 10,
+     "hi": 20,
+     "n": 0
+    },
+    {
+     "lo": 20,
+     "hi": 30,
+     "n": 6421
+    },
+    {
+     "lo": 30,
+     "hi": 40,
+     "n": 6599
+    },
+    {
+     "lo": 40,
+     "hi": 50,
+     "n": 0
+    },
+    {
+     "lo": 50,
+     "hi": 60,
+     "n": 1248
+    },
+    {
+     "lo": 60,
+     "hi": 100,
+     "n": 3774
+    },
+    {
+     "lo": 100,
+     "hi": 1000,
+     "n": 2588
+    }
+   ],
+   "bkg_surviving_scalar_cut": [
+    {
+     "gev": 30,
+     "barrel": 426,
+     "endcap": 13783
+    },
+    {
+     "gev": 35,
+     "barrel": 303,
+     "endcap": 10019
+    },
+    {
+     "gev": 40,
+     "barrel": 220,
+     "endcap": 7390
+    },
+    {
+     "gev": 45,
+     "barrel": 220,
+     "endcap": 7390
+    },
+    {
+     "gev": 50,
+     "barrel": 220,
+     "endcap": 7390
+    }
+   ],
+   "met_min": 0.0,
+   "met_q001": 0.42,
+   "met_q01": 1.53,
+   "met_median": 18.91,
+   "met_pct_below_20": 52.46
+  },
+  "mH125_mS15": {
+   "n": 570,
+   "htmiss_min": 40.36,
+   "htmiss_max": 768.98,
+   "htmissScalar_min": 40.76,
+   "jet_pt_max_min": 0.0,
+   "jet_pt_max_q01": 26.46,
+   "jets": {
+    "all": {
+     "n": 570,
+     "fractions": {
+      "0": 0.007,
+      "1": 0.36,
+      "2": 0.311,
+      "3": 0.17,
+      "4": 0.153
+     }
+    }
+   },
+   "met_min": 21.55,
+   "met_q001": 22.5,
+   "met_q01": 24.28,
+   "met_median": 88.31,
+   "met_pct_below_20": 0.0
+  },
+  "mH125_mS55": {
+   "n": 423,
+   "htmiss_min": 40.05,
+   "htmiss_max": 648.06,
+   "htmissScalar_min": 40.05,
+   "jet_pt_max_min": 28.41,
+   "jet_pt_max_q01": 34.3,
+   "jets": {
+    "all": {
+     "n": 423,
+     "fractions": {
+      "0": 0.0,
+      "1": 0.314,
+      "2": 0.331,
+      "3": 0.187,
+      "4": 0.168
+     }
+    }
+   },
+   "met_min": 23.1,
+   "met_q001": 23.28,
+   "met_q01": 35.81,
+   "met_median": 130.93,
+   "met_pct_below_20": 0.0
+  },
+  "mH200_mS50": {
+   "n": 1520,
+   "htmiss_min": 40.08,
+   "htmiss_max": 1101.73,
+   "htmissScalar_min": 40.08,
+   "jet_pt_max_min": 25.75,
+   "jet_pt_max_q01": 31.08,
+   "jets": {
+    "all": {
+     "n": 1520,
+     "fractions": {
+      "0": 0.0,
+      "1": 0.318,
+      "2": 0.311,
+      "3": 0.204,
+      "4": 0.167
+     }
+    }
+   },
+   "met_min": 20.08,
+   "met_q001": 22.03,
+   "met_q01": 29.15,
+   "met_median": 92.5,
+   "met_pct_below_20": 0.0
+  },
+  "mH400_mS100": {
+   "n": 3792,
+   "htmiss_min": 40.2,
+   "htmiss_max": 1191.45,
+   "htmissScalar_min": 40.2,
+   "jet_pt_max_min": 27.04,
+   "jet_pt_max_q01": 35.26,
+   "jets": {
+    "all": {
+     "n": 3792,
+     "fractions": {
+      "0": 0.0,
+      "1": 0.234,
+      "2": 0.319,
+      "3": 0.22,
+      "4": 0.227
+     }
+    }
+   },
+   "met_min": 20.07,
+   "met_q001": 22.43,
+   "met_q01": 35.05,
+   "met_median": 132.38,
+   "met_pct_below_20": 0.0
+  },
+  "mH600_mS150": {
+   "n": 4490,
+   "htmiss_min": 40.0,
+   "htmiss_max": 1321.18,
+   "htmissScalar_min": 40.03,
+   "jet_pt_max_min": 25.85,
+   "jet_pt_max_q01": 34.42,
+   "jets": {
+    "all": {
+     "n": 4490,
+     "fractions": {
+      "0": 0.0,
+      "1": 0.222,
+      "2": 0.285,
+      "3": 0.231,
+      "4": 0.262
+     }
+    }
+   },
+   "met_min": 20.26,
+   "met_q001": 21.59,
+   "met_q01": 32.9,
+   "met_median": 164.7,
+   "met_pct_below_20": 0.0
+  },
+  "mH1000_mS275": {
+   "n": 4188,
+   "htmiss_min": 40.02,
+   "htmiss_max": 1447.43,
+   "htmissScalar_min": 40.49,
+   "jet_pt_max_min": 26.68,
+   "jet_pt_max_q01": 38.95,
+   "jets": {
+    "all": {
+     "n": 4188,
+     "fractions": {
+      "0": 0.0,
+      "1": 0.13,
+      "2": 0.239,
+      "3": 0.246,
+      "4": 0.385
+     }
+    }
+   },
+   "met_min": 22.32,
+   "met_q001": 25.21,
+   "met_q01": 39.91,
+   "met_median": 279.95,
+   "met_pct_below_20": 0.0
+  }
+ },
+ "met_cut_gev": 20.0
+}

@@ -1,0 +1,42 @@
+20 groups of identical columns; kept the first name, dropped the rest
+
+MS1Vtx_barrel_l1hcal
+    = MS1Vtx_l1hcal_raw
+msvtx_caloClusterSumE
+    = summedCaloClusters/clusterSumE
+msvtx_caloClusterSumPt
+    = summedCaloClusters/clusterSumPt
+msvtx_caloClusterSumPtScalar
+    = summedCaloClusters/clusterScalarSumPt
+msvtx_el1ecal
+    = summedCaloClusters/el1ecal
+msvtx_el1hcal
+    = summedCaloClusters/el1hcal
+msvtx_el2ecal
+    = summedCaloClusters/el2ecal
+msvtx_el2hcal
+    = summedCaloClusters/el2hcal
+msvtx_el3ecal
+    = summedCaloClusters/el3ecal
+msvtx_el3hcal
+    = summedCaloClusters/el3hcal
+msvtx_el4ecal
+    = summedCaloClusters/el4ecal
+msvtx_el4hcal
+    = summedCaloClusters/el4hcal
+msvtx_nCaloClusters_Egt300MeV_NOSYS
+    = summedCaloClusters/nClustersAboveThreshold
+msvtx_nCaloClusters_NOSYS
+    = summedCaloClusters/nClusters
+msvtx_nTrk
+    = MS1Vtx_nTracklet_raw
+msvtx_trackSoftSumNTracks
+    = msvtx_trackSoftSumPtStats/nTracks
+msvtx_trackSoftSumPt_NOSYS
+    = msvtx_trackSoftSumPtStats/sumPt
+nBOL_NOSYS
+    = msegUnAssoc_counts/nBOL
+nEOL_NOSYS
+    = msegUnAssoc_counts/nEOL
+trigPassed_HLT_2e17_lhvloose_L12eEM18M
+    = trigPassed_HLT_2e24_lhvloose_L12eEM24L

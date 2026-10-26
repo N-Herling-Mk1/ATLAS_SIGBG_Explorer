@@ -1,0 +1,18 @@
+SELECTION CHECK (transcribed from console checks, 2026-10-26)
+==============================================================================
+background htmiss_NOSYS max      40.00 GeV  (none >= 40)
+signal     htmiss_NOSYS min      40.00 GeV  (over 6 mass points)
+samples disjoint in htmiss_NOSYS: YES
+
+background jet_n x htmissScalar band (GeV):
+  jets 0    ~0: 15,429   1-40:      0   >40:      0
+  jets 1    ~0:      0   1-40: 13,020   >40:      0
+  jets 2    ~0:      0   1-40:      0   >40:  4,529
+  jets 3    ~0:      0   1-40:      0   >40:  2,023
+  jets 4+   ~0:      0   1-40:      0   >40:  1,058
+
+met_met_NOSYS (from the mk2 ht40_met20 selection report):
+  background median 18.91 GeV, 52.46% below 20 GeV
+  signal minimum 20.07-23.10 GeV over the 6 mass points (0% below 20 GeV)
+
+Regenerate the full table (per region, signal counts) with:  python tools/selection_check.py

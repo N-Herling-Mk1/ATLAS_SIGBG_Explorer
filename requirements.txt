@@ -1,0 +1,8 @@
+# pipeline
+numpy>=1.24
+pandas>=2.0
+matplotlib>=3.7
+scikit-learn>=1.3
+# site builder (renders the PDF pages to PNG for the web pages)
+pymupdf>=1.24
+pillow>=10.0

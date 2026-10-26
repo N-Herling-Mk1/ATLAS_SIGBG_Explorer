@@ -1,0 +1,132 @@
+# region	feature	category	reason
+endcap	met_significance_NOSYS	htmiss-linked	D 0.876
+endcap	jet_pt_max_NOSYS	htmiss-linked	D 0.854
+endcap	htmissScalar_NOSYS	htmiss-linked	D 0.789
+endcap	msvtx_closestJet_pt_NOSYS	htmiss-linked	D 0.687
+endcap	met_sumet_NOSYS	htmiss-linked	D 0.687
+endcap	msvtx_nMDT	redundant	|rho| >= 0.9 with MS1Vtx_endcap_hits_ntot (block 4)
+endcap	jet_n_NOSYS	htmiss-linked	D 0.511
+endcap	msvtx_jetMinDR_NOSYS	htmiss-linked	D 0.493
+endcap	msvtx_chiSquared	suspicious	max per-mass D 1.000 >= 0.99
+endcap	htmiss_y_NOSYS	htmiss-linked	D 0.413
+endcap	MSTracklet_endcap_rms_dR	redundant	|rho| >= 0.9 with MSTracklet_endcap_avg_dR (block 15)
+endcap	msvtx_caloClusterSumPt	redundant	|rho| >= 0.9 with msvtx_caloClusterSumPtScalar (block 16)
+endcap	MSeg_endcap_rms_dR	redundant	|rho| >= 0.9 with MSeg_endcap_avg_dR (block 13)
+endcap	htmiss_x_NOSYS	htmiss-linked	D 0.383
+endcap	msvtx_caloClusterSumE	redundant	|rho| >= 0.9 with msvtx_caloClusterSumPtScalar (block 16)
+endcap	MS1Vtx_maxclusE_raw	redundant	|rho| >= 0.9 with msvtx_caloClusterSumPtScalar (block 16)
+endcap	averageInteractionsPerCrossing	non-physics	D 0.368
+endcap	msvtx_nCaloClusters_NOSYS	redundant	|rho| >= 0.9 with msvtx_nCaloClusters_Egt300MeV_NOSYS (block 21)
+endcap	MS1Vtx_avg_clusE_raw	redundant	|rho| >= 0.9 with MS1Vtx_rms_clusE_raw (block 22)
+endcap	muonAllSegments_counts/nBIL	redundant	|rho| >= 0.9 with msegUnAssoc_counts/nBIL (block 18)
+endcap	msvtx_el2ecal	redundant	|rho| >= 0.9 with msvtx_el3ecal (block 23)
+endcap	actualInteractionsPerCrossing	non-physics	D 0.298
+endcap	muonAllSegments_counts/nBOL	redundant	|rho| >= 0.9 with nBOL_NOSYS (block 35)
+endcap	msvtx_el3hcal	weak	D 0.193 < max(0.2, 2 x 0.022)
+endcap	msegUnAssoc_nSeg	weak	D 0.187 < max(0.2, 2 x 0.022)
+endcap	msegUnAssoc_counts/nEML	weak	D 0.187 < max(0.2, 2 x 0.022)
+endcap	muonAllSegments_counts/nEML	weak	D 0.179 < max(0.2, 2 x 0.022)
+endcap	msegNCB_counts/nEIL	weak	D 0.151 < max(0.2, 2 x 0.022)
+endcap	msvtx_trackSoftSumNTracks	weak	D 0.140 < max(0.2, 2 x 0.022)
+endcap	msvtx_trackSoftSumPt_NOSYS	weak	D 0.140 < max(0.2, 2 x 0.022)
+endcap	msvtx_nRPCOuterStation	weak	D 0.138 < max(0.2, 2 x 0.022)
+endcap	msvtx_eta_NOSYS	weak	D 0.136 < max(0.2, 2 x 0.022)
+endcap	msvtx_nRPC	weak	D 0.134 < max(0.2, 2 x 0.022)
+endcap	msvtx_nRPCMiddleStation	weak	D 0.119 < max(0.2, 2 x 0.022)
+endcap	muonAllSegments_counts/nEIL	weak	D 0.119 < max(0.2, 2 x 0.022)
+endcap	msvtx_y	weak	D 0.118 < max(0.2, 2 x 0.022)
+endcap	muonAllSegments_counts/nEOL	weak	D 0.116 < max(0.2, 2 x 0.022)
+endcap	msvtx_x	weak	D 0.115 < max(0.2, 2 x 0.022)
+endcap	msegUnAssoc_counts/nEIL	weak	D 0.115 < max(0.2, 2 x 0.022)
+endcap	mseg_nSeg	weak	D 0.109 < max(0.2, 2 x 0.022)
+endcap	nEOL_NOSYS	weak	D 0.107 < max(0.2, 2 x 0.022)
+endcap	msvtx_nRPCInwards	weak	D 0.105 < max(0.2, 2 x 0.022)
+endcap	msvtx_phi_NOSYS	weak	D 0.099 < max(0.2, 2 x 0.022)
+endcap	msvtx_el4hcal	weak	D 0.094 < max(0.2, 2 x 0.022)
+endcap	mseg_counts/nEIL	weak	D 0.093 < max(0.2, 2 x 0.022)
+endcap	nMSeg_ratio_EIEM	weak	D 0.086 < max(0.2, 2 x 0.022)
+endcap	msegUnAssoc_counts/nBML	weak	D 0.069 < max(0.2, 2 x 0.022)
+endcap	muonAllSegments_counts/nBML	weak	D 0.062 < max(0.2, 2 x 0.022)
+endcap	msvtx_z	weak	D 0.057 < max(0.2, 2 x 0.022)
+endcap	mseg_counts/nBOL	weak	D 0.057 < max(0.2, 2 x 0.022)
+endcap	mseg_counts/nBML	weak	D 0.053 < max(0.2, 2 x 0.022)
+endcap	mseg_counts/nEOL	weak	D 0.052 < max(0.2, 2 x 0.022)
+endcap	mseg_counts/nBIL	weak	D 0.041 < max(0.2, 2 x 0.022)
+endcap	msvtx_nTGCInnerStation	weak	D 0.039 < max(0.2, 2 x 0.022)
+endcap	msvtx_nTGCInwards	weak	D 0.038 < max(0.2, 2 x 0.022)
+endcap	mseg_counts/nEML	weak	D 0.033 < max(0.2, 2 x 0.022)
+endcap	met_phi_NOSYS	weak	D 0.013 < max(0.2, 2 x 0.022)
+endcap	coreFlags	non-physics	D 0.007
+endcap	MS1Vtx_barrel_hits_ntot	dead	constant or empty in this region
+endcap	MSTracklet_barrel_avg_dR	dead	constant or empty in this region
+endcap	MSTracklet_barrel_rms_dR	dead	constant or empty in this region
+endcap	MSeg_barrel_avg_dR	dead	constant or empty in this region
+endcap	MSeg_barrel_rms_dR	dead	constant or empty in this region
+barrel	met_significance_NOSYS	htmiss-linked	D 0.898
+barrel	jet_pt_max_NOSYS	htmiss-linked	D 0.873
+barrel	muonAllSegments_counts/nEML	redundant	|rho| >= 0.9 with msegUnAssoc_counts/nEML (block 3)
+barrel	htmissScalar_NOSYS	htmiss-linked	D 0.798
+barrel	met_sumet_NOSYS	htmiss-linked	D 0.737
+barrel	msvtx_closestJet_pt_NOSYS	htmiss-linked	D 0.707
+barrel	muonAllSegments_counts/nEOL	redundant	|rho| >= 0.9 with nEOL_NOSYS (block 8)
+barrel	jet_n_NOSYS	htmiss-linked	D 0.562
+barrel	msvtx_jetMinDR_NOSYS	htmiss-linked	D 0.555
+barrel	htmiss_y_NOSYS	htmiss-linked	D 0.436
+barrel	htmiss_x_NOSYS	htmiss-linked	D 0.409
+barrel	averageInteractionsPerCrossing	non-physics	D 0.326
+barrel	msvtx_trackHardMinDR_NOSYS	redundant	|rho| >= 0.9 with MS1Vtx_mindR_jetcut_raw (block 18)
+barrel	nBOL_NOSYS	redundant	|rho| >= 0.9 with muonAllSegments_counts/nBOL (block 19)
+barrel	msvtx_caloClusterSumE	redundant	|rho| >= 0.9 with MS1Vtx_maxclusE_raw (block 24)
+barrel	msvtx_caloClusterSumPt	redundant	|rho| >= 0.9 with MS1Vtx_maxclusE_raw (block 24)
+barrel	msvtx_caloClusterSumPtScalar	redundant	|rho| >= 0.9 with MS1Vtx_maxclusE_raw (block 24)
+barrel	MS1Vtx_avg_clusE_raw	redundant	|rho| >= 0.9 with MS1Vtx_maxclusE_raw (block 24)
+barrel	MS1Vtx_rms_clusE_raw	redundant	|rho| >= 0.9 with MS1Vtx_maxclusE_raw (block 24)
+barrel	MSeg_barrel_rms_dR	redundant	|rho| >= 0.9 with MSeg_barrel_avg_dR (block 17)
+barrel	msvtx_nCaloClusters_NOSYS	redundant	|rho| >= 0.9 with msvtx_el3ecal (block 25)
+barrel	msvtx_nCaloClusters_Egt300MeV_NOSYS	redundant	|rho| >= 0.9 with msvtx_el3ecal (block 25)
+barrel	msegUnAssoc_counts/nBML	redundant	|rho| >= 0.9 with muonAllSegments_counts/nBML (block 26)
+barrel	muonSegments_nSeg	redundant	|rho| >= 0.9 with msegUnAssoc_nSeg (block 22)
+barrel	msvtx_el2ecal	redundant	|rho| >= 0.9 with msvtx_el3ecal (block 25)
+barrel	actualInteractionsPerCrossing	non-physics	D 0.237
+barrel	msvtx_nSegUnAssoc	weak	D 0.193 < max(0.2, 2 x 0.051)
+barrel	mseg_counts/nEIL	weak	D 0.170 < max(0.2, 2 x 0.051)
+barrel	msegNCB_counts/nEIL	weak	D 0.168 < max(0.2, 2 x 0.051)
+barrel	msvtx_chiSquared	suspicious	max per-mass D 1.000 >= 0.99
+barrel	msvtx_el4hcal	weak	D 0.166 < max(0.2, 2 x 0.051)
+barrel	msvtx_y	weak	D 0.166 < max(0.2, 2 x 0.051)
+barrel	MS1Vtx_avg_clustime_raw	weak	D 0.157 < max(0.2, 2 x 0.051)
+barrel	msvtx_nMDTInnerStation	weak	D 0.154 < max(0.2, 2 x 0.051)
+barrel	msegUnAssoc_counts/nBIL	weak	D 0.152 < max(0.2, 2 x 0.051)
+barrel	muonAllSegments_counts/nBIL	weak	D 0.146 < max(0.2, 2 x 0.051)
+barrel	msegUnAssoc_counts/nEIL	weak	D 0.136 < max(0.2, 2 x 0.051)
+barrel	mseg_counts/nBML	weak	D 0.135 < max(0.2, 2 x 0.051)
+barrel	mseg_counts/nBOL	weak	D 0.132 < max(0.2, 2 x 0.051)
+barrel	muonAllSegments_counts/nEIL	weak	D 0.132 < max(0.2, 2 x 0.051)
+barrel	msvtx_muRoIClusTrig_mindR_NOSYS	weak	D 0.119 < max(0.2, 2 x 0.051)
+barrel	msvtx_nMDTInwards	weak	D 0.114 < max(0.2, 2 x 0.051)
+barrel	msvtx_trackSoftSumPt_NOSYS	weak	D 0.111 < max(0.2, 2 x 0.051)
+barrel	msvtx_trackSoftSumNTracks	weak	D 0.110 < max(0.2, 2 x 0.051)
+barrel	msvtx_nTGC	weak	D 0.108 < max(0.2, 2 x 0.051)
+barrel	msvtx_eta_NOSYS	weak	D 0.104 < max(0.2, 2 x 0.051)
+barrel	MSTracklet_barrel_avg_dR	weak	D 0.097 < max(0.2, 2 x 0.051)
+barrel	MSTracklet_barrel_rms_dR	weak	D 0.097 < max(0.2, 2 x 0.051)
+barrel	mseg_counts/nBIL	weak	D 0.097 < max(0.2, 2 x 0.051)
+barrel	msvtx_z	weak	D 0.096 < max(0.2, 2 x 0.051)
+barrel	mseg_counts/nEML	weak	D 0.090 < max(0.2, 2 x 0.051)
+barrel	msvtx_x	weak	D 0.087 < max(0.2, 2 x 0.051)
+barrel	mseg_nSeg	weak	D 0.071 < max(0.2, 2 x 0.051)
+barrel	msvtx_nTGCOuterStation	weak	D 0.063 < max(0.2, 2 x 0.051)
+barrel	msvtx_nTGCMiddleStation	weak	D 0.059 < max(0.2, 2 x 0.051)
+barrel	met_phi_NOSYS	weak	D 0.041 < max(0.2, 2 x 0.051)
+barrel	msvtx_nTGCInnerStation	weak	D 0.038 < max(0.2, 2 x 0.051)
+barrel	msvtx_nTGCExtendedStation	weak	D 0.034 < max(0.2, 2 x 0.051)
+barrel	mseg_counts/nEOL	weak	D 0.027 < max(0.2, 2 x 0.051)
+barrel	msvtx_nRPCInwards	weak	D 0.024 < max(0.2, 2 x 0.051)
+barrel	coreFlags	non-physics	D 0.010
+barrel	msvtx_nTGCInwards	weak	D 0.007 < max(0.2, 2 x 0.051)
+barrel	MS1Vtx_endcap_hits_ntot	dead	constant or empty in this region
+barrel	MSTracklet_endcap_avg_dR	dead	constant or empty in this region
+barrel	MSTracklet_endcap_rms_dR	dead	constant or empty in this region
+barrel	MSeg_endcap_avg_dR	dead	constant or empty in this region
+barrel	MSeg_endcap_rms_dR	dead	constant or empty in this region
+barrel	msvtx_el1hcal	dead	constant or empty in this region

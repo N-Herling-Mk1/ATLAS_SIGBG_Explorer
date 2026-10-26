@@ -1,0 +1,65 @@
+# nn features mk4 (2026-09-21) -- Prof. Johns - Sep review
+
+# NN1 barrel (20)
+nMSeg_ratio_BIBM
+track_scalar_sum_pt_barrel
+MS1Vtx_clusE
+MS1Vtx_avg_clusE
+MS1Vtx_rms_clusE
+MS1Vtx_maxclusE
+MS1Vtx_l1ecal
+MS1Vtx_l1hcal
+MS1Vtx_l2ecal
+MS1Vtx_l2hcal
+MS1Vtx_l3ecal
+MS1Vtx_l3hcal
+MS1Vtx_l4ecal
+MS1Vtx_l4hcal
+MS1Vtx_mindR_jetcut
+MS1Vtx_sumTrackPt0p2Cone
+msvtx_caloClusterSumPtScalar
+msegUnAssoc_counts/nBIL
+msegUnAssoc_counts/nBML
+msegUnAssoc_counts/nBOL
+
+# NN1 endcap (16)
+nMSeg_ratio_EIEM
+track_scalar_sum_pt_endcap
+MS1Vtx_clusE
+MS1Vtx_avg_clusE
+MS1Vtx_rms_clusE
+MS1Vtx_maxclusE
+MS1Vtx_l1ecal
+MS1Vtx_l1hcal
+MS1Vtx_l2ecal
+MS1Vtx_l2hcal
+MS1Vtx_l3ecal
+MS1Vtx_l3hcal
+MS1Vtx_l4ecal
+MS1Vtx_l4hcal
+MS1Vtx_mindR_jetcut
+MS1Vtx_sumTrackPt0p2Cone
+
+# NN2 barrel (10)
+MSTracklet_barrel_avg_dR
+MSTracklet_barrel_rms_dR
+MSeg_barrel_avg_dR
+MSeg_barrel_rms_dR
+MS1Vtx_barrel_hits_ntot
+MSVtx_MET_dphi
+MS1Vtx_maxclustime
+MS1Vtx_avg_clustime
+MS1Vtx_rms_clustime
+MS1Vtx_nTracklet
+
+# NN2 endcap (10)
+MSTracklet_endcap_avg_dR
+MSTracklet_endcap_rms_dR
+MSeg_endcap_avg_dR
+MSeg_endcap_rms_dR
+MS1Vtx_endcap_hits_ntot
+MSVtx_MET_dphi
+MS1Vtx_maxclustime
+MS1Vtx_avg_clustime
+MS1Vtx_rms_clustime
+MS1Vtx_nTracklet
