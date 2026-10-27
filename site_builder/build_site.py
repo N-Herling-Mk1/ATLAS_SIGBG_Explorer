@@ -2,7 +2,7 @@
 """
 build_site.py  --  turn pipeline results into the static site (GitHub Pages, served from the repo root).
 
-Reads   results/<run>/          one folder per finished kj_sigbg_mk4 run (copy of out_sigbg_mk4_r<N>)
+Reads   results/<run>/          one folder per finished kj_sigbg_mk4/mk5 run (copy of out_sigbg_mk<V>_r<N>)
         pipeline/               the script's thresholds and lists, exclude_features.txt, nn_features_mk4.txt
 Writes  data/<run>.js           everything the pages show, as window.SIGBG.runs[<run>]
         data/index.js           run list + pipeline metadata
@@ -31,7 +31,7 @@ RESULTS = REPO / "results"
 PIPE = REPO / "pipeline"
 DATA_OUT = REPO / "data"
 IMG_OUT = REPO / "img"
-PIPELINE_SCRIPT = PIPE / "kj_sigbg_mk4.py"
+PIPELINE_SCRIPT = PIPE / "kj_sigbg_mk5.py"
 ARCHIVE = RESULTS / "archive"
 ARCHIVE_INDEX = ARCHIVE / "archive_index.json"
 BKG_SPLIT_RUN = ARCHIVE / "out_sigbg_mk2_r1"     # mk2 run cut on htmissScalar >= 40: below = 0-1 jets, above = 2+ jets
@@ -471,7 +471,9 @@ def attach_bkg_split(feats):
 def build_run(run, dpi, force):
     root = RESULTS / run
     log(f"run {run}: {root}")
-    R = {"name": run, "built": time.strftime("%Y-%m-%d %H:%M")}
+    R = {"name": run, "built": time.strftime("%Y-%m-%d %H:%M"),
+         # plot layout of this run's PDFs (the site's page map needs it): mk5 puts legends in their own column
+         "layout": "mk5" if run.lower().startswith(("mk5", "mk6", "mk7", "mk8", "mk9")) else "mk4"}
 
     # ---------------------------------------------------------------- 00 common
     c0 = root / "00_common"

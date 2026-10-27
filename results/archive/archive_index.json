@@ -6,8 +6,12 @@
    "date": "2026-10-24 / 25",
    "script": "pipeline/archive/kj_sigbg_mk1.py",
    "runs": [
-    {"folder": "out_sigbg_r1", "label": "mk1 round 1", "status": "superseded",
-     "note": "First full pass: KS D per feature, region (barrel / endcap / all) and mass point, pooled and equal-weight combinations. Three 193-page PDFs, one per region."}
+    {
+     "folder": "out_sigbg_r1",
+     "label": "mk1 round 1",
+     "status": "superseded",
+     "note": "First full pass: KS D per feature, region (barrel / endcap / all) and mass point, pooled and equal-weight combinations. Three 193-page PDFs, one per region."
+    }
    ],
    "what": "Signal vs background KS pass. Inventory of all columns across the 7 files, ALL7 feature pool, HARD_EXCLUDE, exclude_features.txt, NaN / -999 handling, region auto-detection.",
    "changes": "Starting point. Fixes made during the session: summary crash on tied scores; endcap defined by msvtx_inEndcaps_NOSYS == 1 (was inBarrel == 0).",
@@ -18,12 +22,24 @@
    "date": "2026-10-25",
    "script": "pipeline/archive/kj_sigbg_mk2.py",
    "runs": [
-    {"folder": "out_sigbg_mk2_r1", "label": "mk2 · cut htmissScalar >= 40 GeV", "status": "kept, relabelled",
-     "note": "Cut applied to both samples on htmissScalar_NOSYS (see selection_report.txt). Background keeps only its 2+-jet events (7,610 of 36,059), so the 'after cut' rankings compare signal with 2+-jet background, not with background in the signal region. Its bkg_split.csv (background below vs above the cut = 0-1 jets vs 2+ jets) is still the best test of which features depend on jet activity, and the site uses it."},
-    {"folder": "out_sigbg_mk2_r1_ht40", "label": "mk2 · cut htmiss_NOSYS >= 40 GeV", "status": "null result",
-     "note": "Zero background events survive the cut in every region. This run is how the disjoint HTmiss selection was found: background htmiss_NOSYS < 40 GeV, signal >= 40 GeV. No after-cut rankings exist."},
-    {"folder": "out_sigbg_mk2_r1_ht40_met20", "label": "mk2 · cut htmiss >= 40 and met_met >= 20 GeV", "status": "null result",
-     "note": "Zero background events survive. Its selection_report.txt also shows that every signal event has met_met_NOSYS >= 20.07 GeV while 52% of background is below 20 GeV: a second edge in the signal selection (see Findings)."}
+    {
+     "folder": "out_sigbg_mk2_r1",
+     "label": "mk2 · cut htmissScalar >= 40 GeV",
+     "status": "kept, relabelled",
+     "note": "Cut applied to both samples on htmissScalar_NOSYS (see selection_report.txt). Background keeps only its 2+-jet events (7,610 of 36,059), so the 'after cut' rankings compare signal with 2+-jet background, not with background in the signal region. Its bkg_split.csv (background below vs above the cut = 0-1 jets vs 2+ jets) is still the best test of which features depend on jet activity, and the site uses it."
+    },
+    {
+     "folder": "out_sigbg_mk2_r1_ht40",
+     "label": "mk2 · cut htmiss_NOSYS >= 40 GeV",
+     "status": "null result",
+     "note": "Zero background events survive the cut in every region. This run is how the disjoint HTmiss selection was found: background htmiss_NOSYS < 40 GeV, signal >= 40 GeV. No after-cut rankings exist."
+    },
+    {
+     "folder": "out_sigbg_mk2_r1_ht40_met20",
+     "label": "mk2 · cut htmiss >= 40 and met_met >= 20 GeV",
+     "status": "null result",
+     "note": "Zero background events survive. Its selection_report.txt also shows that every signal event has met_met_NOSYS >= 20.07 GeV while 52% of background is below 20 GeV: a second edge in the signal selection (see Findings)."
+    }
    ],
    "what": "Two selections side by side (all events, and a preselection applied to both samples), one PDF per feature with all regions and both selections, background below-vs-above-cut check, rank-identical duplicates collapsed.",
    "changes": "Adds --presel cuts, selection_report.txt, compare_all_vs_<cut>.csv, bkg_split.csv, duplicates.txt, per-feature folders.",
@@ -34,8 +50,12 @@
    "date": "2026-10-25",
    "script": "pipeline/archive/kj_sigbg_mk3.py",
    "runs": [
-    {"folder": "out_sigbg_mk3_r1", "label": "mk3 round 1 (tables only)", "status": "superseded",
-     "note": "Run without per-feature plots. Scores, NN-list table and unit test are identical in content to mk4's 00_common and B_mc_vs_data."}
+    {
+     "folder": "out_sigbg_mk3_r1",
+     "label": "mk3 round 1 (tables only)",
+     "status": "superseded",
+     "note": "Run without per-feature plots. Scores, NN-list table and unit test are identical in content to mk4's 00_common and B_mc_vs_data."
+    }
    ],
    "what": "HTmiss unit test, one folder and PDF per feature, NN feature-list table (nn_features_mk4.txt resolved to CSV columns), strongest features unused by the NN lists, noise floor with effective sample size.",
    "changes": "Adds unit_tests.txt, nn_feature_scores.csv, D_crit. Drops the preselection.",
@@ -44,13 +64,26 @@
   {
    "version": "mk4",
    "date": "2026-10-25",
-   "script": "pipeline/kj_sigbg_mk4.py",
+   "script": "pipeline/archive/kj_sigbg_mk4.py",
    "runs": [
-    {"folder": "../mk4_r1", "label": "mk4 round 1 (current)", "status": "current",
-     "note": "Everything on the main pages of this site."}
+    {
+     "folder": "../mk4_r1",
+     "label": "mk4 round 1 (shown on the main pages until mk5_r1 exists)",
+     "status": "current",
+     "note": "Everything on the main pages of this site."
+    }
    ],
    "what": "Four analysis blocks: A barrel vs endcap, B MC vs data, C correlation and redundancy blocks, D prototype input sets with a gradient-boosted surrogate; GAMBIT inputs (pools, blocks, drop suggestions).",
    "changes": "Adds blocks A, C, D, gambit_inputs, htmiss-linked / non-physics / suspicious categories. In the repo: data folder read from --data / config.txt / KJ_SIGBG_DATA (analysis unchanged).",
+   "superseded_by": "mk5 (same analysis, plot layout fixed: legends in their own column, panel codes)."
+  },
+  {
+   "version": "mk5",
+   "date": "2026-10-27",
+   "script": "pipeline/kj_sigbg_mk5.py",
+   "runs": [],
+   "what": "mk4's analysis unchanged. Plot layout: every legend sits in its own column beside its row of panels, never on the data; every panel title carries a code (1a, 1b, 2a ...) matching the site's page map; summary bar chart legend moved above the axes.",
+   "changes": "Per-feature pages (block A shape + separation, block B region pages) redrawn; output folder out_sigbg_mk5_r<N>.",
    "superseded_by": ""
   },
   {

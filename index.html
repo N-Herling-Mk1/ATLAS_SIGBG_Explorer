@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SIG/BG Feature Explorer</title>
-<meta name="description" content="Signal/background feature study for the ATLAS Run-3 MSVtx LLP search: KS separation, barrel vs endcap, correlation blocks, prototype NN feature sets.">
+<meta name="description" content="Signal/background feature study for the ATLAS Run-3 MSVtx LLP search: KS separation, barrel vs endcap, correlation blocks, suggested NN feature groupings.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/shell.css">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/icon_32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="assets/brand/icon_192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/brand/icon_180.png">
@@ -19,54 +19,51 @@
 <meta property="og:description" content="Which inputs separate signal from background in the ATLAS Run-3 MSVtx LLP search, and which only appear to.">
 <meta property="og:image" content="assets/brand/social_preview_1280x640.png">
 <script>
-  /* theme before first paint: dark (default) or light, remembered per browser */
   (function () { try { var t = localStorage.getItem("sigbg.theme"); if (t === "light") document.documentElement.setAttribute("data-theme", "light"); } catch (e) {} })();
 </script>
 </head>
-<body>
-<header class="top">
-  <div class="top-inner">
-    <a class="brand" href="#/" aria-label="SIG/BG Feature Explorer, overview">
+<body class="shell">
+<aside class="side" id="side" aria-label="Navigation">
+  <div class="side-top">
+    <a class="brand" href="#/home" data-go="home" aria-label="SIG/BG Feature Explorer, start page">
       <img class="brand-icon" src="assets/brand/icon_64.png" alt="" width="34" height="34">
       <span class="brand-mark"><b>S</b>IG<span class="slash">/</span><b>B</b>G</span>
-      <span class="brand-sub">FEATURE EXPLORER <em>mk1</em></span>
     </a>
-    <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch colour theme">light</button>
-    <label class="run-pick">run
-      <select id="runSelect" aria-label="Result set"></select>
-    </label>
+    <div class="brand-sub">FEATURE EXPLORER <em>mk1</em></div>
+    <button class="side-toggle" id="sideToggle" type="button" aria-expanded="false" aria-controls="sideNav">menu</button>
   </div>
-  <nav class="tabs" id="tabs" aria-label="Sections">
-    <a href="#/">Overview</a>
-    <a href="#/graphs">Graphs</a>
-    <a href="#/findings">Findings</a>
-    <a href="#/rankings">Rankings</a>
-    <a href="#/feature">Feature</a>
-    <a href="#/regions">Barrel vs endcap</a>
-    <a href="#/correlation">Correlation</a>
-    <a href="#/prototypes">Prototypes</a>
-    <a href="#/exclusions">Exclusions</a>
-    <a href="#/plots">PDF browser</a>
-    <a href="#/summaries">Summaries</a>
-    <a href="#/methods">Metrics</a>
-    <a href="#/files">Files &amp; code</a>
-    <a href="#/archive">Archive</a>
+  <nav class="side-nav" id="sideNav">
+    <div class="side-h">Start here</div>
+    <a class="opt" href="#/be" data-go="be"><b>Features</b><span>as Barrel – Endcap</span></a>
+    <a class="opt" href="#/sb" data-go="sb"><b>Features</b><span>as Signal – Background</span></a>
+    <a class="opt" href="#/gbe" data-go="gbe"><b>Suggested NN groupings</b><span>Barrel – Endcap</span></a>
+    <a class="opt" href="#/gsb" data-go="gsb"><b>Suggested NN groupings</b><span>Signal – Background</span></a>
+    <div class="side-h">Explore</div>
+    <a href="#/findings" data-go="findings">Findings <i>read first</i></a>
+    <a href="#/rankings" data-go="rankings">Rankings</a>
+    <a href="#/graphs" data-go="graphs">Graphs by split</a>
+    <a href="#/plots" data-go="plots">PDF browser · every page</a>
+    <a href="#/regions" data-go="regions">Barrel vs endcap map</a>
+    <a href="#/correlation" data-go="correlation">Correlation</a>
+    <a href="#/prototypes" data-go="prototypes">Prototype scores</a>
+    <a href="#/exclusions" data-go="exclusions">Exclusions <i>editable file</i></a>
+    <a href="#/summaries" data-go="summaries">Summaries</a>
+    <a href="#/methods" data-go="methods">Metrics</a>
+    <div class="side-h">About</div>
+    <a href="#/overview" data-go="overview">Overview</a>
+    <a href="#/files" data-go="files">Files &amp; code</a>
+    <a href="#/archive" data-go="archive">Archive · mk1 → mk5</a>
   </nav>
-</header>
-
-<main id="app" tabindex="-1">
-  <p class="loading">Loading…</p>
+  <div class="side-foot">
+    <label class="run-pick">run <select id="runSelect" aria-label="Result set"></select></label>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch colour theme">light</button>
+    <a class="side-pop" id="popOut" href="app.html" target="_blank" rel="noopener" title="open the current view in its own tab">open in new tab ↗</a>
+  </div>
+</aside>
+<main class="stage">
+  <iframe id="view" title="SIG/BG Feature Explorer view" src="about:blank"></iframe>
 </main>
-
-<footer class="foot">
-  <div>kj_sigbg_mk4 · site builder mk1 · <span id="builtStamp"></span></div>
-  <div>Real data only. Plots are rendered from the pipeline's own PDFs; every PDF is downloadable on its page.</div>
-</footer>
-
-<div id="tip" class="tip" role="tooltip" hidden></div>
-
 <script src="data/index.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
-<script src="assets/app.js"></script>
+<script src="assets/shell.js"></script>
 </body>
 </html>

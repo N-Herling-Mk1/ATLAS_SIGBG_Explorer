@@ -117,7 +117,8 @@
     const h = (location.hash || "#/").slice(2);
     const [view, ...rest] = h.split("/");
     const arg = rest.length ? decodeURIComponent(rest.join("/")) : "";
-    const v = VIEWS[view || "overview"] || VIEWS.overview;
+    const v = VIEWS[view || "home"] || VIEWS.home;
+    document.onkeydown = null;
     document.querySelectorAll("#tabs a").forEach((a) => {
       const t = a.getAttribute("href").slice(2);
       a.classList.toggle("on", t === (view || "") || (t === "" && !view));
@@ -125,6 +126,8 @@
     v(arg);
     app.focus({ preventScroll: true });
     window.scrollTo(0, 0);
+    const titles = { home: "Start", be: "Features · Barrel–Endcap", sb: "Features · Signal–Background", gbe: "NN groupings · Barrel–Endcap", gsb: "NN groupings · Signal–Background" };
+    tellShell({ type: "route", hash: location.hash || "#/home", title: titles[view || "home"] || (view ? view[0].toUpperCase() + view.slice(1) : "Start") });
   }
   window.addEventListener("hashchange", route);
 
@@ -149,7 +152,7 @@
       <p class="lede">For every column common to the background file and the six signal mass points, this site shows how strongly it
       separates signal from background (two-sample KS distance), in the endcap, the barrel and both together, and how it behaves
       across the two regions, how redundant it is with other columns, and what prototype NN1/NN2 input sets built from it score.
-      Every number and plot comes from <code>pipeline/kj_sigbg_mk4.py</code>; the code is in this repo so you can rerun it on your own copy of the files.</p>
+      Every number and plot comes from <code>pipeline/kj_sigbg_mk5.py</code> (run mk4_r1: its predecessor mk4); the code is in this repo so you can rerun it on your own copy of the files.</p>
       </div></section>
 
       <div class="grid g4" style="margin-top:22px">
@@ -173,7 +176,7 @@
       <div class="flow">
         <div class="step"><div class="n">1</div><div class="t">Your data</div><p>Background + 6 mass-point CSVs. Never in the repo; point <code>pipeline/config.txt</code> at them.</p></div>
         <div class="step edit"><div class="n">2</div><div class="t">exclude_<wbr>features.txt</div><span class="badge-edit">EDITABLE</span><p>Columns you want left out. Edit by hand or generate it on the <a href="#/exclusions">Exclusions</a> page.</p></div>
-        <div class="step"><div class="n">3</div><div class="t">Pipeline</div><p><code>kj_sigbg_mk4.py</code>: unit test, KS scores, barrel vs endcap, correlation, prototypes.</p></div>
+        <div class="step"><div class="n">3</div><div class="t">Pipeline</div><p><code>kj_sigbg_mk5.py</code>: unit test, KS scores, barrel vs endcap, correlation, prototypes.</p></div>
         <div class="step"><div class="n">4</div><div class="t">results/&lt;run&gt;</div><p>CSVs, text reports and one PDF per feature. <a href="#/files">Browse every file</a>.</p></div>
         <div class="step"><div class="n">5</div><div class="t">Site builder</div><p><code>build_site.py</code> renders the PDFs to images and writes the data this page reads.</p></div>
         <div class="step"><div class="n">6</div><div class="t">This site</div><p>Static pages. Open <code>index.html</code> locally or serve it with GitHub Pages.</p></div>
@@ -567,7 +570,7 @@
       const g = f ? (f.category || (f.suspicious ? "suspicious" : "physics features")) : "other columns / patterns";
       (by[g] = by[g] || []).push(n);
     });
-    let t = `# exclude_features.txt  --  EDITABLE: features you want left out of kj_sigbg_mk4.py\n` +
+    let t = `# exclude_features.txt  --  EDITABLE: features you want left out of kj_sigbg_mk5.py\n` +
       `# generated on the Exclusions page of the SIG/BG Feature Explorer, ${new Date().toISOString().slice(0, 10)}, from run ${RUN.name}\n` +
       `# One exact column name or glob per line; '#' starts a comment. Put this file in pipeline/ and rerun.\n` +
       `# Already removed by the script (HARD_EXCLUDE): labels, NN scores, weights, ids, htmiss_NOSYS, met_met_NOSYS, region selectors.\n`;
@@ -597,7 +600,7 @@
         non_numeric: "non-numeric", constant: "constant in every file" }[k] || k)}</div></div>`).join("")}</div>
       ${Object.entries(ex).map(([k, v]) => `<details><summary>${esc(k)} (${v.length})</summary><p class="mono small">${v.map(esc).join(" · ") || "<span class='muted'>none</span>"}</p></details>`).join("")}
       <details><summary>HARD_EXCLUDE patterns in the script (${hard.length})</summary>
-        <p class="small muted">Case-insensitive regular expressions matched against the full column name. Edit <code>HARD_EXCLUDE</code> in <code>kj_sigbg_mk4.py</code> to change them.</p>
+        <p class="small muted">Case-insensitive regular expressions matched against the full column name. Edit <code>HARD_EXCLUDE</code> in <code>kj_sigbg_mk5.py</code> to change them.</p>
         <pre>${hard.map(esc).join("\n")}</pre></details>
       <details><summary>Current pipeline/exclude_features.txt</summary><pre>${esc(P().exclude_file || "(empty)")}</pre></details>
 
@@ -624,7 +627,7 @@
           <textarea class="out" id="xo" readonly aria-label="Preview of exclude_features.txt">${esc(exclText(st))}</textarea>
           <div class="toolbar"><button class="btn primary" type="button" id="xdl">Download exclude_features.txt</button>
             <button class="btn" type="button" id="xcp">Copy</button><span class="small muted" id="xmsg"></span></div>
-          <p class="small muted">Then: replace <code>pipeline/exclude_features.txt</code>, run <code>python pipeline/kj_sigbg_mk4.py --round 2</code>,
+          <p class="small muted">Then: replace <code>pipeline/exclude_features.txt</code>, run <code>python pipeline/kj_sigbg_mk5.py --round 2</code>,
           copy the new output folder into <code>results/</code> and run the site builder. Check <code>00_common/excluded_report.txt</code> under "user": every line should match at least one column.</p>
         </div>
       </div>`;
@@ -1227,11 +1230,11 @@ pip install -r requirements.txt
 copy pipeline\\config_example.txt pipeline\\config.txt     # macOS/Linux: cp pipeline/config_example.txt pipeline/config.txt
 #   then set  DATA = &lt;folder with the 7 CSVs&gt;  in pipeline/config.txt
 
-python pipeline/kj_sigbg_mk4.py --round 2      # writes pipeline/out_sigbg_mk4_r2/  (about 5–10 min)
-python tools/selection_check.py --out pipeline/out_sigbg_mk4_r2
+python pipeline/kj_sigbg_mk5.py --round 1      # writes pipeline/out_sigbg_mk5_r1/  (about 5–10 min)
+python tools/selection_check.py --out pipeline/out_sigbg_mk5_r1
 
 # publish the new run on the site
-#   copy pipeline/out_sigbg_mk4_r2  ->  results/mk4_r2
+#   copy pipeline/out_sigbg_mk5_r1  ->  results/mk5_r1
 python site_builder/build_site.py              # renders the PDFs, writes data/*.js
 #   open index.html, or commit and push (GitHub Pages: branch main, folder / root)</pre>
       <p>Useful flags: <code>--block BC</code> (only some blocks), <code>--no-plots</code> (tables only, fast), <code>--top 20</code> (feature PDFs for the top 20 only), <code>--data &lt;folder&gt;</code>.</p>
@@ -1240,7 +1243,8 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
       <h2>Code</h2>
       <div class="tablewrap"><table class="ftree"><thead><tr><th>file</th><th>what it does</th><th class="n">size</th><th></th></tr></thead><tbody>
       ${code.map((c) => `<tr><td>${esc(c.path)}</td><td class="small">${esc({
-        "pipeline/kj_sigbg_mk4.py": "The analysis: unit test, KS scores, blocks A–D, GAMBIT inputs.",
+        "pipeline/kj_sigbg_mk5.py": "The analysis: unit test, KS scores, blocks A–D, GAMBIT inputs (mk5: legends in their own column).",
+        "pipeline/archive/kj_sigbg_mk4.py": "Archived: produced results/mk4_r1 (legends inside the panels).",
         "pipeline/exclude_features.txt": "EDITABLE — columns to leave out.",
         "pipeline/nn_features_mk4.txt": "The current NN1/NN2 input lists (Prof. Johns, Sep 2026 review) that the pipeline scores.",
         "pipeline/config_example.txt": "Template: copy to config.txt and set your data folder.",
@@ -1271,6 +1275,480 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
       </tbody></table></div>`;
   };
 
+
+  // ================================================================== MAIN VIEWS (the shell's four "start here" options)
+  // Page geometry: where each panel sits on a pipeline PDF page, as figure fractions [x, y-from-top, w, h],
+  // computed from the pipeline's own gridspecs. mk4 = legends inside the panels; mk5 = legends in their own column (L1..L3).
+  const PAGE_GEOM = {"mk4": {"region": {"1a": [0.065, 0.155, 0.424, 0.1878], "1b": [0.561, 0.155, 0.424, 0.1878], "2a": [0.065, 0.4461, 0.424, 0.1878], "2b": [0.561, 0.4461, 0.424, 0.1878], "3a": [0.065, 0.7372, 0.424, 0.1878], "3b": [0.561, 0.7372, 0.424, 0.1878]}, "shape": {"1a": [0.065, 0.155, 0.424, 0.3182], "1b": [0.561, 0.155, 0.424, 0.3182], "2a": [0.065, 0.6068, 0.424, 0.3182], "2b": [0.561, 0.6068, 0.424, 0.3182]}, "separation": {"1a": [0.065, 0.155, 0.424, 0.3182], "1b": [0.561, 0.155, 0.424, 0.3182], "2a": [0.065, 0.6068, 0.424, 0.3182], "2b": [0.561, 0.6068, 0.424, 0.3182]}}, "mk5": {"region": {"1a": [0.058, 0.155, 0.3113, 0.1878], "1b": [0.4144, 0.155, 0.3113, 0.1878], "L1": [0.7709, 0.155, 0.2241, 0.1878], "2a": [0.058, 0.4461, 0.3113, 0.1878], "2b": [0.4144, 0.4461, 0.3113, 0.1878], "L2": [0.7709, 0.4461, 0.2241, 0.1878], "3a": [0.058, 0.7372, 0.3113, 0.1878], "3b": [0.4144, 0.7372, 0.3113, 0.1878], "L3": [0.7709, 0.7372, 0.2241, 0.1878]}, "shape": {"1a": [0.058, 0.155, 0.3113, 0.3182], "1b": [0.4144, 0.155, 0.3113, 0.3182], "L1": [0.7709, 0.155, 0.2241, 0.3182], "2a": [0.058, 0.6068, 0.3113, 0.3182], "2b": [0.4144, 0.6068, 0.3113, 0.3182], "L2": [0.7709, 0.6068, 0.2241, 0.3182]}, "separation": {"1a": [0.058, 0.155, 0.3113, 0.3182], "1b": [0.4144, 0.155, 0.3113, 0.3182], "L1": [0.7709, 0.155, 0.2241, 0.3182], "2a": [0.058, 0.6068, 0.3113, 0.3182], "2b": [0.4144, 0.6068, 0.3113, 0.3182], "L2": [0.7709, 0.6068, 0.2241, 0.3182]}}};
+  const PAGE_DOC = {
+    region: {
+      name: "signal vs background page",
+      cells: {
+        "1a": "each mass point vs background · raw (log y)", "1b": "each mass point vs background · normalized",
+        "2a": "combined signal (pooled, and equal weight per mass) vs background · raw", "2b": "combined signal vs background · normalized",
+        "3a": "background alone · raw", "3b": "background alone · normalized",
+        L1: "legend for row 1: masses, D, n", L2: "legend for row 2: combined signal, D", L3: "legend for row 3: background, NaN / −999",
+      },
+    },
+    shape: {
+      name: "barrel vs endcap · shape page",
+      cells: {
+        "1a": "background (data): barrel vs endcap · raw (log y)", "1b": "background (data): barrel vs endcap · normalized",
+        "2a": "combined signal (MC): barrel vs endcap · raw (log y)", "2b": "combined signal (MC): barrel vs endcap · normalized",
+        L1: "legend for row 1: n per region, shape D", L2: "legend for row 2: n per region, shape D",
+      },
+    },
+    separation: {
+      name: "barrel vs endcap · separation page",
+      cells: {
+        "1a": "ENDCAP · each mass point vs background (normalized)", "1b": "BARREL · each mass point vs background (normalized)",
+        "2a": "ENDCAP · combined signal vs background", "2b": "BARREL · combined signal vs background",
+        L1: "legend for row 1: masses, D endcap | barrel", L2: "legend for row 2: combined, D endcap | barrel",
+      },
+    },
+    overview: { name: "overview page", cells: {} },
+  };
+  const OVERVIEW_NOTE = "Text page: every KS D for this feature (per region and mass point), its noise floor, its rank, and which NN lists use it.";
+  function pageType(label) {
+    if (REGIONS.includes(label)) return "region";
+    if (label === "shape" || label === "separation") return label;
+    return "overview";
+  }
+  const layoutOf = () => (RUN && RUN.layout === "mk5" ? "mk5" : "mk4");
+  const REGION_TONE = { endcap: "endcap", barrel: "barrel", all: "all", shape: "be", separation: "be", overview: "all" };
+
+  // ---------------------------------------------------------------- big, bright variable banner
+  function vbanner(f, kicker, tone, extra) {
+    const e = f.regions.endcap, b = f.regions.barrel;
+    const stats = [
+      e ? `<span><em>endcap</em> D ${fmt(e.D)} · rank ${e.rank}</span>` : "",
+      b ? `<span><em>barrel</em> D ${fmt(b.D)} · rank ${b.rank}</span>` : "",
+      f.A && f.A.separates ? `<span><em>separates in</em> ${esc(f.A.separates)}</span>` : "",
+    ].join("");
+    return `<div class="vbanner tone-${tone}">
+      <div class="vb-kicker">${esc(kicker)}</div>
+      <div class="vb-name">${esc(f.name)}</div>
+      <div class="vb-stats">${stats}</div>
+      <div class="vb-chips">${catChip(f)}${REGIONS.filter((r) => r !== "all" && jetDep(f, r)).length ? `<span class="chip jet">jet-dependent</span>` : ""}${nnChips(f)}${extra || ""}</div>
+    </div>`;
+  }
+
+  // ---------------------------------------------------------------- page map: what is where on the page
+  function pageMap(type) {
+    const doc = PAGE_DOC[type], geom = (PAGE_GEOM[layoutOf()] || {})[type] || {};
+    const W = 220, H = 170;
+    let svg = `<svg class="pmap" viewBox="0 0 ${W} ${H}" role="img" aria-label="Layout of this page">
+      <rect x="0.5" y="0.5" width="${W - 1}" height="${H - 1}" class="pm-page"/>
+      <rect x="0.5" y="0.5" width="${W - 1}" height="${H * 0.115}" class="pm-banner"/>
+      <text x="6" y="${H * 0.08}" class="pm-bt">VARIABLE NAME · region · rank</text>`;
+    Object.entries(geom).forEach(([code, g]) => {
+      const [x, y, w, h] = g;
+      const leg = code[0] === "L";
+      svg += `<g class="pm-cell ${leg ? "leg" : ""}" data-code="${code}"><rect x="${x * W}" y="${y * H}" width="${w * W}" height="${h * H}"/>
+        <text x="${(x + w / 2) * W}" y="${(y + h / 2) * H + 4}" text-anchor="middle">${leg ? "legend" : code}</text></g>`;
+    });
+    svg += `</svg>`;
+    if (type === "overview") {
+      return `<div class="pm"><h3>Page map</h3>${svg}<p class="small muted">${OVERVIEW_NOTE}</p></div>`;
+    }
+    const codes = Object.keys(geom).filter((c) => doc.cells[c]);
+    return `<div class="pm"><h3>Page map · ${esc(doc.name)}</h3>${svg}
+      <ol class="pm-list">${codes.map((c) => `<li data-code="${c}"><b>${c[0] === "L" ? "legend" : c}</b>${esc(doc.cells[c])}</li>`).join("")}</ol>
+      <p class="small muted">Hover a panel or a line to outline it on the plot; click to zoom into it.
+      ${layoutOf() === "mk4" ? "This run is mk4: legends sit inside the panels and can cover data. mk5 runs move every legend into its own column." : "a = left column, b = right column."}</p></div>`;
+  }
+  function panelBox(type, code) {
+    const g = ((PAGE_GEOM[layoutOf()] || {})[type] || {})[code];
+    if (!g) return null;
+    const [x, y, w, h] = g;
+    if (code[0] === "L") return [x - 0.005, y - 0.01, w + 0.01, h + 0.02];
+    const x0 = Math.max(0, x - 0.05), y0 = Math.max(0, y - 0.035);
+    return [x0, y0, Math.min(1, x + w + 0.012) - x0, Math.min(1, y + h + 0.06) - y0];   // + title, axis labels
+  }
+  function zoomPanel(img, box, caption) {
+    const lb = document.createElement("div");
+    lb.className = "lightbox";
+    const cv = document.createElement("canvas");
+    const sw = img.naturalWidth * box[2], sh = img.naturalHeight * box[3];
+    const scale = Math.min((window.innerWidth - 40) / sw, (window.innerHeight - 110) / sh, 3);
+    cv.width = Math.round(sw * scale); cv.height = Math.round(sh * scale);
+    cv.className = "zoomcv";
+    const g = cv.getContext("2d");
+    g.imageSmoothingQuality = "high";
+    g.drawImage(img, img.naturalWidth * box[0], img.naturalHeight * box[1], sw, sh, 0, 0, cv.width, cv.height);
+    lb.appendChild(cv);
+    const bar = document.createElement("div");
+    bar.className = "lb-bar";
+    bar.innerHTML = `<span>${esc(caption)}</span><button type="button">close (Esc)</button>`;
+    lb.appendChild(bar);
+    const close = () => { lb.remove(); document.removeEventListener("keydown", onKey); };
+    const onKey = (e) => { if (e.key === "Escape") close(); };
+    lb.addEventListener("click", (e) => { if (e.target === lb || e.target.tagName === "BUTTON") close(); });
+    document.addEventListener("keydown", onKey);
+    document.body.appendChild(lb);
+  }
+
+  // ---------------------------------------------------------------- plot viewer: banner + page tabs + plot + page map
+  function viewerHTML(f, block, label, kicker) {
+    const pl = f[block === "B" ? "plots_B" : "plots_A"];
+    if (!pl) return `${vbanner(f, kicker, "all")}<p class="muted">No ${block === "B" ? "signal-vs-background" : "barrel-vs-endcap"} PDF for this feature.</p>`;
+    let k = pl.pages.findIndex((p) => p.label === label);
+    if (k < 0) k = block === "B" ? Math.min(1, pl.pages.length - 1) : 0;
+    const pg = pl.pages[k], type = pageType(pg.label), tone = REGION_TONE[pg.label] || "all";
+    const tabName = (l) => (l === "overview" ? "overview (text)" : l === "separation" ? "endcap | barrel separation" : l === "shape" ? "barrel vs endcap shape" : l);
+    return `<div class="pv" data-type="${type}">
+      ${vbanner(f, kicker, tone)}
+      <div class="pv-bar">
+        <div class="seg pv-tabs">${pl.pages.map((p, i) => `<button type="button" data-l="${esc(p.label)}" class="${i === k ? "on " + (REGIONS.includes(p.label) ? p.label : "") : ""}">${esc(tabName(p.label))}</button>`).join("")}</div>
+        <div class="pv-dl">
+          <button class="btn sm" type="button" data-listtoggle title="show or hide the feature list">${ui.mvHide ? "show list" : "hide list"}</button>
+          <a class="btn sm" href="${esc(pl.pdf)}#page=${k + 1}" target="_blank" rel="noopener" title="open the original vector PDF at this page">open PDF p${k + 1}</a>
+          <a class="btn sm primary" href="${esc(pl.pdf)}" download>download PDF · ${pl.pages.length} p</a>
+          <a class="btn sm" href="${esc(pg.src)}" download>PNG</a>
+        </div>
+      </div>
+      <div class="pv-body">
+        <div class="pv-imgwrap">
+          <div class="pv-tag tone-${tone}"><b>${esc(f.name)}</b><span>${esc(tabName(pg.label))}</span></div>
+          <img class="pv-img" src="${esc(pg.src)}" alt="${esc(f.name)} · ${esc(pg.label)}" data-type="${type}">
+          <div class="pv-hl" hidden></div>
+        </div>
+        <aside class="pv-map">${pageMap(type)}</aside>
+      </div>
+    </div>`;
+  }
+  function bindViewer(root, f, onTab) {
+    const pv = root.querySelector(".pv");
+    if (!pv) return;
+    pv.querySelectorAll(".pv-tabs button").forEach((b) => b.addEventListener("click", () => onTab(b.dataset.l)));
+    const lt = pv.querySelector("[data-listtoggle]"), mv = root.querySelector(".mv");
+    if (mv) mv.classList.toggle("nolist", !!ui.mvHide);
+    if (lt) { if (!mv) lt.remove(); else lt.addEventListener("click", () => { ui.mvHide = !ui.mvHide; mv.classList.toggle("nolist", ui.mvHide); lt.textContent = ui.mvHide ? "show list" : "hide list"; }); }
+    const img = pv.querySelector(".pv-img"), hl = pv.querySelector(".pv-hl"), type = pv.dataset.type;
+    if (!img) return;
+    const show = (code) => {
+      const box = code && panelBox(type, code);
+      pv.querySelectorAll("[data-code]").forEach((n) => n.classList.toggle("on", n.dataset.code === code));
+      if (!box) { hl.hidden = true; return; }
+      hl.hidden = false;
+      hl.style.left = box[0] * 100 + "%"; hl.style.top = box[1] * 100 + "%";
+      hl.style.width = box[2] * 100 + "%"; hl.style.height = box[3] * 100 + "%";
+      hl.dataset.code = code;
+    };
+    pv.querySelectorAll(".pv-map [data-code]").forEach((n) => {
+      n.addEventListener("mouseenter", () => show(n.dataset.code));
+      n.addEventListener("mouseleave", () => show(null));
+      n.addEventListener("click", () => { const b = panelBox(type, n.dataset.code); if (b && img.complete) zoomPanel(img, b, `${f.name} · panel ${n.dataset.code} · ${PAGE_DOC[type].cells[n.dataset.code] || ""}`); });
+    });
+    // hovering the plot itself names the panel under the cursor
+    img.addEventListener("mousemove", (e) => {
+      const r = img.getBoundingClientRect(), fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height;
+      const geom = (PAGE_GEOM[layoutOf()] || {})[type] || {};
+      const hit = Object.keys(geom).find((c) => { const b = panelBox(type, c); return b && fx >= b[0] && fx <= b[0] + b[2] && fy >= b[1] && fy <= b[1] + b[3]; });
+      if (hit !== hl.dataset.code || hl.hidden) show(hit || null);
+      img.style.cursor = hit ? "zoom-in" : "default";
+    });
+    img.addEventListener("mouseleave", () => show(null));
+    img.addEventListener("click", () => {
+      const code = hl.hidden ? null : hl.dataset.code, b = code && panelBox(type, code);
+      if (b) zoomPanel(img, b, `${f.name} · panel ${code} · ${PAGE_DOC[type].cells[code] || ""}`);
+      else lightbox(img.src, img.alt, null);
+    });
+  }
+
+  // ---------------------------------------------------------------- shared list helpers
+  function keyNav(listIds, current, go) {
+    document.onkeydown = (e) => {
+      if (e.target.closest("input, select, textarea")) return;
+      const i = listIds.indexOf(current);
+      if (["ArrowDown", "j"].includes(e.key) && i < listIds.length - 1) { e.preventDefault(); go(listIds[i + 1]); }
+      if (["ArrowUp", "k"].includes(e.key) && i > 0) { e.preventDefault(); go(listIds[i - 1]); }
+    };
+  }
+  const mbar = (v, cls) => `<i class="mb ${cls}"><b style="width:${Math.max(0, Math.min(1, v || 0)) * 100}%"></b></i>`;
+  function splitArg(arg, n) { const p = (arg || "").split("|"); while (p.length < n) p.push(""); return p; }
+
+  // ---------------------------------------------------------------- HOME
+  VIEWS.home = function () {
+    const bkg = RUN.region_audit.rows.find((r) => r.sample === "bkg") || {};
+    const card = (h, kick, title, sub, desc) => `<a class="homecard" href="#/${h}">
+      <span class="hc-kick">${kick}</span><span class="hc-title">${title}</span><span class="hc-sub">${sub}</span><span class="hc-desc">${desc}</span>
+      <span class="hc-go">open →</span></a>`;
+    app.innerHTML = `
+      <section class="home-hero">
+        <img src="assets/brand/sigbg_banner_480.png" alt="" class="home-art" width="480" height="480">
+        <div>
+          <div class="eyebrow">ATLAS Run-3 · MSVtx LLP search · run ${esc(RUN.name)} · ${RUN.features.length} features</div>
+          <h1>Pick a <span class="k">view</span></h1>
+          <p class="lede">Every view shows the variable's name in large type above its plots, a page map that says what each panel is,
+          and links to the original PDFs. Background: ${int(bkg.n)} data events (${int(bkg.endcap)} endcap · ${int(bkg.barrel)} barrel); signal: six mass points (MC).</p>
+          <p class="small muted">Before trusting any ranking, read <a href="#/findings">Findings</a>: the background is selected at HTmiss &lt; 40 GeV and signal at &ge; 40 GeV, so HTmiss- and jet-related variables separate by construction.</p>
+        </div>
+      </section>
+      <div class="homegrid">
+        ${card("be", "features", "Barrel – Endcap", "every feature, region against region", "How each variable's background and signal shapes differ between barrel and endcap, and where it separates signal from background. Two pages per feature: shape, and endcap | barrel separation.")}
+        ${card("sb", "features", "Signal – Background", "every feature, MC signal against data background", "KS separation per region and mass point, with the full plot set: each mass point, combined signal, background alone, raw and normalized.")}
+        ${card("gbe", "suggested NN groupings", "Barrel – Endcap", "candidate NN1 / NN2 input sets", "The pipeline's prototype input sets P0–P3, member by member, with each member's barrel-vs-endcap plots.")}
+        ${card("gsb", "suggested NN groupings", "Signal – Background", "candidate NN1 / NN2 input sets", "The same prototype sets with each member's signal-vs-background page in the chosen region, the surrogate AUCs, and one-click group PDFs.")}
+      </div>
+      <p class="small muted" style="margin-top:18px">Everything else (rankings, every page of every PDF, correlation, exclusions, the full mk1 → mk5 archive) is in the left panel.</p>`;
+  };
+
+  // ---------------------------------------------------------------- FEATURES · BARREL – ENDCAP
+  const BE_SORTS = [["delta", "|D barrel − D endcap|"], ["endcap", "D endcap"], ["barrel", "D barrel"], ["shape_bkg", "shape D · background"], ["shape_sig", "shape D · signal"], ["name", "name"]];
+  const BE_SEP = ["all", "both", "endcap only", "barrel only", "neither"];
+  VIEWS.be = function (arg) {
+    const [pageArg, nameArg] = splitArg(arg, 2);
+    ui.beSort = ui.beSort || "delta"; ui.beSep = ui.beSep || "all";
+    const page = ["shape", "separation"].includes(pageArg) ? pageArg : (ui.bePage || "shape");
+    ui.bePage = page;
+    let list = RUN.features.filter((f) => f.A);
+    const q = (ui.beQ || "").trim().toLowerCase();
+    if (q) list = list.filter((f) => f.name.toLowerCase().includes(q));
+    if (ui.beSep !== "all") list = list.filter((f) => f.A.separates === ui.beSep);
+    if (ui.hideHM) list = list.filter((f) => f.category !== "htmiss-linked");
+    if (ui.onlyNN) list = list.filter((f) => (f.nn_lists || []).length);
+    const key = {
+      delta: (f) => (f.A.delta_barrel_minus_endcap == null ? -1 : Math.abs(f.A.delta_barrel_minus_endcap)), endcap: (f) => f.A.D_endcap ?? -1, barrel: (f) => f.A.D_barrel ?? -1,
+      shape_bkg: (f) => f.A.shape_D_bkg ?? -1, shape_sig: (f) => f.A.shape_D_sig ?? -1,
+    }[ui.beSort];
+    list.sort(ui.beSort === "name" ? (a, b) => a.name.localeCompare(b.name) : (a, b) => key(b) - key(a) || a.name.localeCompare(b.name));
+    const f = feat(nameArg) && list.some((x) => x.name === nameArg) ? feat(nameArg) : list[0];
+    const go = (name, pg) => { location.hash = "#/be/" + encodeURIComponent((pg || page) + "|" + name); };
+    app.innerHTML = `
+      <div class="mv">
+        <aside class="mv-list">
+          <div class="mv-head"><div class="eyebrow">features as</div><h2 class="mv-title">Barrel – Endcap</h2>
+            <input type="search" id="beq" placeholder="search ${RUN.features.length} features" value="${esc(ui.beQ || "")}" aria-label="Search features">
+            <div class="mv-row"><label>sort <select id="besort">${BE_SORTS.map(([k, l]) => `<option value="${k}" ${k === ui.beSort ? "selected" : ""}>${l}</option>`).join("")}</select></label></div>
+            <div class="mv-chips">${BE_SEP.map((s) => `<button type="button" data-sep="${s}" class="fchip ${s === ui.beSep ? "on" : ""}">${s === "all" ? "all" : "separates: " + s}</button>`).join("")}</div>
+            <div class="mv-row"><label><input type="checkbox" id="behm" ${ui.hideHM ? "checked" : ""}> hide htmiss-linked</label>
+              <label><input type="checkbox" id="benn" ${ui.onlyNN ? "checked" : ""}> NN lists only</label></div>
+            <div class="mv-count">${list.length} features · ↑ ↓ to step</div>
+            <div class="mv-legend"><span><i class="mb e"><b style="width:100%"></b></i> D endcap</span><span><i class="mb b"><b style="width:100%"></b></i> D barrel</span></div>
+          </div>
+          <ol class="mv-items">${list.map((x) => `<li class="${f && x.name === f.name ? "on" : ""}" data-f="${esc(x.name)}">
+            <span class="mv-name">${esc(x.name)}</span>
+            <span class="mv-bars">${mbar(x.A.D_endcap, "e")}${mbar(x.A.D_barrel, "b")}</span>
+            <span class="mv-meta">${esc(x.A.separates || "")} · Δ ${fmt(x.A.delta_barrel_minus_endcap, 2)}</span></li>`).join("")}</ol>
+        </aside>
+        <section class="mv-main">${f ? viewerHTML(f, "A", page, "barrel – endcap") +
+          `<p class="small muted pv-foot">Every feature's ${page} page in one PDF:
+            ${(RUN.splits || []).filter((s) => s.block === "A").map((s) => s.bundle ? `<a href="${esc(s.bundle.href)}" download>${esc(s.title)} · ${s.bundle.pages} p</a>` : "").join(" · ")}</p>`
+          : `<p class="muted">No features match.</p>`}</section>
+      </div>`;
+    app.querySelectorAll(".mv-items li").forEach((li) => li.addEventListener("click", () => go(li.dataset.f)));
+    const on = app.querySelector(".mv-items li.on");
+    if (on) on.scrollIntoView({ block: "nearest" });
+    const rer = () => VIEWS.be(page + "|" + (f ? f.name : ""));
+    const bq = app.querySelector("#beq");
+    bq.addEventListener("input", () => { ui.beQ = bq.value; const p = bq.selectionStart; rer(); const n = app.querySelector("#beq"); n.focus(); n.setSelectionRange(p, p); });
+    app.querySelector("#besort").addEventListener("change", (e) => { ui.beSort = e.target.value; rer(); });
+    app.querySelectorAll("[data-sep]").forEach((b) => b.addEventListener("click", () => { ui.beSep = b.dataset.sep; rer(); }));
+    app.querySelector("#behm").addEventListener("change", (e) => { ui.hideHM = e.target.checked; rer(); });
+    app.querySelector("#benn").addEventListener("change", (e) => { ui.onlyNN = e.target.checked; rer(); });
+    if (f) {
+      bindViewer(app, f, (l) => go(f.name, l));
+      keyNav(list.map((x) => x.name), f.name, (n) => go(n));
+    }
+  };
+
+  // ---------------------------------------------------------------- FEATURES · SIGNAL – BACKGROUND
+  VIEWS.sb = function (arg) {
+    const [regArg, nameArg] = splitArg(arg, 2);
+    const region = REGIONS.includes(regArg) ? regArg : (ui.sbRegion || "endcap");
+    ui.sbRegion = region;
+    let list = byRank(region);
+    const q = (ui.sbQ || "").trim().toLowerCase();
+    if (q) list = list.filter((f) => f.name.toLowerCase().includes(q));
+    if (ui.hideHM) list = list.filter((f) => f.category !== "htmiss-linked");
+    if (ui.hideNP) list = list.filter((f) => f.category !== "non-physics" && !f.suspicious);
+    if (ui.hideJet) list = list.filter((f) => !jetDep(f, region));
+    if (ui.onlyNN) list = list.filter((f) => (f.nn_lists || []).length);
+    if (ui.onlySep) list = list.filter((f) => separates(f.regions[region]));
+    const f = feat(nameArg) && list.some((x) => x.name === nameArg) ? feat(nameArg) : list[0];
+    const page = ui.sbPage && ui.sbPage !== "region" ? ui.sbPage : region;
+    const go = (name, reg) => { location.hash = "#/sb/" + encodeURIComponent((reg || region) + "|" + name); };
+    const bundle = (RUN.splits || []).find((s) => s.id === "sb_" + region);
+    app.innerHTML = `
+      <div class="mv">
+        <aside class="mv-list">
+          <div class="mv-head"><div class="eyebrow">features as</div><h2 class="mv-title">Signal – Background</h2>
+            <div class="seg mv-seg">${REGIONS.map((r) => `<button type="button" data-r="${r}" class="${r === region ? "on " + r : ""}">${r}</button>`).join("")}</div>
+            <input type="search" id="sbq" placeholder="search ${RUN.features.length} features" value="${esc(ui.sbQ || "")}" aria-label="Search features">
+            <div class="mv-row"><label><input type="checkbox" id="sbhm" ${ui.hideHM ? "checked" : ""}> hide htmiss-linked</label>
+              <label><input type="checkbox" id="sbnp" ${ui.hideNP ? "checked" : ""}> hide non-physics</label>
+              <label><input type="checkbox" id="sbjd" ${ui.hideJet ? "checked" : ""}> hide jet-dependent</label>
+              <label><input type="checkbox" id="sbnn" ${ui.onlyNN ? "checked" : ""}> NN lists only</label>
+              <label><input type="checkbox" id="sbsp" ${ui.onlySep ? "checked" : ""}> separates only</label></div>
+            <div class="mv-count">${list.length} features · ranked by D in ${region} · ↑ ↓ to step</div>
+          </div>
+          <ol class="mv-items">${list.map((x) => { const r = x.regions[region];
+            return `<li class="${f && x.name === f.name ? "on" : ""}" data-f="${esc(x.name)}">
+            <span class="mv-name"><span class="mv-rank">${r.rank}</span>${esc(x.name)}</span>
+            <span class="mv-bars">${mbar(r.D, x.category === "htmiss-linked" ? "hm" : region === "barrel" ? "b" : region === "endcap" ? "e" : "a")}<span class="mv-d">${fmt(r.D, 3)}</span></span>
+            <span class="mv-meta">${x.category ? esc(x.category) + " · " : ""}${jetDep(x, region) ? "jet-dep · " : ""}${(x.nn_lists || []).join(", ")}</span></li>`; }).join("")}</ol>
+        </aside>
+        <section class="mv-main">${f ? viewerHTML(f, "B", page, "signal – background") +
+          `<p class="small muted pv-foot">${bundle && bundle.bundle ? `Every feature's ${region} page in one PDF: <a href="${esc(bundle.bundle.href)}" download>${esc(bundle.title)} · ${bundle.bundle.pages} p · ${kb(bundle.bundle.bytes)}</a>` : ""}</p>`
+          : `<p class="muted">No features match.</p>`}</section>
+      </div>`;
+    app.querySelectorAll(".mv-items li").forEach((li) => li.addEventListener("click", () => go(li.dataset.f)));
+    const on = app.querySelector(".mv-items li.on");
+    if (on) on.scrollIntoView({ block: "nearest" });
+    const rer = () => VIEWS.sb(region + "|" + (f ? f.name : ""));
+    app.querySelectorAll(".mv-seg button").forEach((b) => b.addEventListener("click", () => { ui.sbPage = "region"; go(f ? f.name : "", b.dataset.r); }));
+    const sq = app.querySelector("#sbq");
+    sq.addEventListener("input", () => { ui.sbQ = sq.value; const p = sq.selectionStart; rer(); const n = app.querySelector("#sbq"); n.focus(); n.setSelectionRange(p, p); });
+    [["sbhm", "hideHM"], ["sbnp", "hideNP"], ["sbjd", "hideJet"], ["sbnn", "onlyNN"], ["sbsp", "onlySep"]].forEach(([id, k]) =>
+      app.querySelector("#" + id).addEventListener("change", (e) => { ui[k] = e.target.checked; rer(); }));
+    if (f) {
+      bindViewer(app, f, (l) => { if (REGIONS.includes(l)) { ui.sbPage = "region"; go(f.name, l); } else { ui.sbPage = l; rer(); } });
+      keyNav(list.map((x) => x.name), f.name, (n) => go(n));
+    }
+  };
+
+  // ---------------------------------------------------------------- SUGGESTED NN GROUPINGS (prototype sets P0..P3)
+  async function mergePdf(items, filename, title, btn, prog) {
+    const barEl = prog.querySelector("i"), txt = prog.querySelector("span");
+    const say = (i, n, label) => { barEl.style.width = (100 * i / Math.max(1, n)).toFixed(1) + "%"; txt.textContent = `${i} / ${n} · ${label}`; };
+    btn.disabled = true; prog.hidden = false; say(0, items.length, "loading pdf-lib");
+    try {
+      if (!window.PDFLib) await loadScript(PDFLIB_URL);
+      const { PDFDocument } = window.PDFLib;
+      const out = await PDFDocument.create();
+      const cache = new Map();
+      for (let n = 0; n < items.length; n++) {
+        const it = items[n];
+        let d = cache.get(it.pdf);
+        if (!d) {
+          const res = await fetch(it.pdf);
+          if (!res.ok) throw new Error(`${it.pdf}: HTTP ${res.status}`);
+          d = await PDFDocument.load(await res.arrayBuffer());
+          cache.set(it.pdf, d);
+          if (cache.size > 6) cache.delete(cache.keys().next().value);
+        }
+        const [p] = await out.copyPages(d, [it.k]);
+        out.addPage(p);
+        say(n + 1, items.length, it.feature);
+      }
+      say(items.length, items.length, "writing PDF");
+      out.setTitle(title);
+      out.setCreator("SIG/BG Feature Explorer (pdf-lib, in the browser)");
+      const bytes = await out.save();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+      a.download = filename;
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      txt.textContent = `done · ${items.length} pages · ${kb(bytes.length)}`;
+    } catch (err) {
+      txt.textContent = "failed: " + err.message;
+    }
+    btn.disabled = false;
+  }
+  function groupView(kind, arg) {
+    const P = RUN.prototypes || {}, names = Object.keys(P).sort();
+    if (!names.length) { app.innerHTML = `<h1>Suggested NN groupings</h1><p class="muted">This run has no prototype sets (block D).</p>`; return; }
+    let [p, net, region, page] = splitArg(arg, 4);
+    if (!P[p]) p = ui.gP && P[ui.gP] ? ui.gP : (names.includes("P1") ? "P1" : names[0]);
+    const nets = Object.keys(P[p].nets);
+    const nnOpts = [...new Set(nets.map((n) => n.split(" ")[0]))];
+    if (!nnOpts.includes(net)) net = nnOpts.includes(ui.gNet) ? ui.gNet : nnOpts[0];
+    const regOpts = [...new Set(nets.filter((n) => n.startsWith(net + " ")).map((n) => n.split(" ")[1]))];
+    const inclusive = regOpts.includes("inclusive");
+    const plotRegions = inclusive ? ["all", "endcap", "barrel"] : regOpts;
+    if (!plotRegions.includes(region)) region = plotRegions.includes(ui.gRegion) ? ui.gRegion : plotRegions[0];
+    const netKey = inclusive ? `${net} inclusive` : `${net} ${region}`;
+    if (kind === "be" && !["shape", "separation"].includes(page)) page = ui.gPage || "shape";
+    Object.assign(ui, { gP: p, gNet: net, gRegion: region, gPage: page });
+    const members = (P[p].nets[netKey] || []).map((n) => feat(n) || { name: n, regions: {}, missing: true });
+    const scoreReg = region === "all" ? null : region;
+    const sc = (RUN.prototype_scores || []).filter((r) => r.prototype === p && (!scoreReg || r.evaluated_in === scoreReg));
+    const base = P.P0 && P.P0.nets[netKey] ? new Set(P.P0.nets[netKey]) : null;
+    const added = base && p !== "P0" ? members.filter((m) => !base.has(m.name)).map((m) => m.name) : [];
+    const dropped = base && p !== "P0" ? [...base].filter((n) => !members.some((m) => m.name === n)) : [];
+    const block = kind === "sb" ? "B" : "A", label = kind === "sb" ? region : page;
+    const items = [];
+    members.forEach((m) => {
+      const pl = m[block === "B" ? "plots_B" : "plots_A"];
+      if (!pl) return;
+      const k = pl.pages.findIndex((x) => x.label === label);
+      if (k >= 0) items.push({ src: pl.pages[k].src, pdf: pl.pdf, k, feature: m.name, caption: `${m.name} · ${label}` });
+    });
+    const href = (pp, nn, rr, pg) => `#/g${kind}/` + encodeURIComponent([pp, nn, rr, pg || ""].join("|"));
+    const auc = (r, n) => r[`AUC_${n}`];
+    const stat = (m) => {
+      if (m.missing) return `<span class="muted">not scored (excluded or dropped)</span>`;
+      if (kind === "sb") { const x = m.regions[region]; return x ? `D ${fmt(x.D)} · rank ${x.rank}${separates(x) ? "" : " · <span class='muted'>below “separates”</span>"}` : "–"; }
+      return m.A ? `endcap ${fmt(m.A.D_endcap)} · barrel ${fmt(m.A.D_barrel)} · ${esc(m.A.separates || "")}` : "–";
+    };
+    const isFile = location.protocol === "file:";
+    const tone = kind === "sb" ? region : "be";
+    app.innerHTML = `
+      <div class="eyebrow">suggested NN feature groupings · ${kind === "sb" ? "signal – background" : "barrel – endcap"}</div>
+      <h1>${esc(p)} · ${esc(net)} · <span class="k">${esc(inclusive ? "inclusive" : region)}</span></h1>
+      <p class="lede">Candidate input sets from the pipeline's block D, scored by a gradient-boosted surrogate (5-fold CV, equal weight per mass point).
+      The surrogate only nominates: the decision belongs to GAMBIT, with closure and G as referees.</p>
+      <div class="gsel">
+        <div class="gsel-row"><span class="gsel-l">set</span>${names.map((n) => `<a class="pbtn ${n === p ? "on" : ""}" href="${href(n, net, region, page)}"><b>${esc(n)}</b><span>${esc(P[n].description)}</span></a>`).join("")}</div>
+        <div class="gsel-row"><span class="gsel-l">network</span><div class="seg">${nnOpts.map((n) => `<a class="segl ${n === net ? "on" : ""}" href="${href(p, n, region, page)}">${esc(n)}</a>`).join("")}</div>
+          <span class="gsel-l">${inclusive ? "plots from" : "region"}</span><div class="seg">${plotRegions.map((r) => `<a class="segl ${r === region ? "on " + r : ""}" href="${href(p, net, r, page)}">${esc(r)}</a>`).join("")}</div>
+          ${kind === "be" ? `<span class="gsel-l">page</span><div class="seg">${["shape", "separation"].map((g) => `<a class="segl ${g === page ? "on" : ""}" href="${href(p, net, region, g)}">${g === "shape" ? "barrel vs endcap shape" : "endcap | barrel separation"}</a>`).join("")}</div>` : ""}</div>
+      </div>
+      <div class="grid g2" style="margin-top:14px">
+        <div class="card"><h3 style="margin-top:0">Surrogate score · ${esc(p)}${scoreReg ? " · evaluated in " + esc(scoreReg) : ""}</h3>
+          ${sc.length ? `<div class="tablewrap"><table><thead><tr><th>evaluated in</th><th class="n">n ${esc(net)}</th><th class="n">AUC ${esc(net)}</th><th class="n">worst mass</th><th class="n">dCor NN1–NN2 bkg</th></tr></thead>
+            <tbody>${sc.map((r) => { const p0 = (RUN.prototype_scores || []).find((x) => x.prototype === "P0" && x.evaluated_in === r.evaluated_in);
+              const d = p0 && p !== "P0" ? auc(r, net) - auc(p0, net) : null;
+              return `<tr><td>${esc(r.evaluated_in)}</td><td class="n">${r["n_" + net]}</td><td class="n"><b>${fmt(auc(r, net))}</b>${d != null ? ` <span class="${d >= 0 ? "up" : "down"}">${d >= 0 ? "+" : ""}${fmt(d)}</span>` : ""}</td><td class="n">${fmt(r["AUCmin_" + net])}</td><td class="n">${fmt(r.dCor_bkg)}</td></tr>`; }).join("")}</tbody></table></div>
+            <p class="small muted">Change vs P0 in the same region. A large jump deserves a look at which members were added (right) before it is believed.</p>` : `<p class="muted">No score row.</p>`}</div>
+        <div class="card"><h3 style="margin-top:0">${esc(netKey)} · ${members.length} members</h3>
+          ${p !== "P0" && base ? `<p class="small"><b class="up">added vs P0:</b> ${added.length ? added.map((n) => `<code>${esc(n)}</code>`).join(" ") : "none"}<br>
+            <b class="down">dropped vs P0:</b> ${dropped.length ? dropped.map((n) => `<code>${esc(n)}</code>`).join(" ") : "none"}</p>` : `<p class="small muted">P0 is the current mk4 list as it stands.</p>`}
+          <a class="btn sm" href="results/${esc(RUN.name)}/D_prototypes/${esc(p)}.txt" download>${esc(p)}.txt</a></div>
+      </div>
+      <div class="gdl" style="margin-top:14px">
+        <button class="btn primary" type="button" id="gpdl" ${items.length && !isFile ? "" : "disabled"}>Download this group as one PDF · ${items.length} pages</button>
+        <div class="gprog" id="gpprog" hidden><div class="pbar"><i></i></div><span class="small mono"></span></div>
+        <span class="small muted">${isFile ? "Opened from a file: the browser won't let the page read PDFs. Each card's PDF link still works; serve the folder (python -m http.server) or use GitHub Pages for the one-click group PDF." : "Built in your browser from the original vector PDFs, in the order shown."}</span>
+      </div>
+      <div class="gcards">${members.map((m, i) => {
+        const it = items.find((x) => x.feature === m.name);
+        const pl = m[block === "B" ? "plots_B" : "plots_A"];
+        return `<article class="gcard">
+          <a class="gc-banner tone-${tone}" href="#/${kind}/${encodeURIComponent((kind === "sb" ? region : page) + "|" + m.name)}" title="open in the feature view">
+            <span class="gc-num">${i + 1}</span><span class="gc-name">${esc(m.name)}</span></a>
+          <div class="gc-stat">${stat(m)} ${m.missing ? "" : catChip(m)}${!m.missing && kind === "sb" && jetDep(m, region) ? `<span class="chip jet">jet-dep</span>` : ""}</div>
+          ${it ? `<img src="${esc(it.src)}" alt="${esc(it.caption)}" loading="lazy" data-n="${items.indexOf(it)}">` : `<div class="gnone">no ${esc(label)} page for this feature</div>`}
+          ${pl ? `<div class="gc-dl"><a href="${esc(pl.pdf)}#page=${(it ? it.k : 0) + 1}" target="_blank" rel="noopener">open PDF p${(it ? it.k : 0) + 1}</a><a href="${esc(pl.pdf)}" download>download PDF</a></div>` : ""}
+        </article>`; }).join("")}</div>`;
+    app.querySelectorAll(".gcards img[data-n]").forEach((img) => img.addEventListener("click", () => lightboxNav(items, +img.dataset.n)));
+    const btn = app.querySelector("#gpdl");
+    btn.addEventListener("click", () => mergePdf(items, `sigbg_${RUN.name}_${p}_${netKey.replace(" ", "_")}_${label}.pdf`,
+      `SIG/BG Feature Explorer · ${RUN.name} · ${p} ${netKey} · ${label}`, btn, app.querySelector("#gpprog")));
+  }
+  VIEWS.gsb = (arg) => groupView("sb", arg);
+  VIEWS.gbe = (arg) => groupView("be", arg);
+
+  // ---------------------------------------------------------------- shell link (iframe <-> left panel)
+  const EMBED = window.parent !== window;
+  function tellShell(msg) { if (EMBED) { try { window.parent.postMessage(Object.assign({ sigbg: 1 }, msg), "*"); } catch (e) { /* ignore */ } } }
+  window.addEventListener("message", (e) => {
+    const m = e.data;
+    if (!m || !m.sigbg || e.source !== window.parent) return;
+    if (m.type === "go" && m.hash && m.hash !== location.hash) location.hash = m.hash;
+    else if (m.type === "theme") {
+      if (m.value === "light") document.documentElement.setAttribute("data-theme", "light"); else document.documentElement.removeAttribute("data-theme");
+      store.set("sigbg.theme", m.value);
+      const tb = document.getElementById("themeBtn"); if (tb) tb.textContent = m.value === "light" ? "dark" : "light";
+      if (RUN) route();
+    } else if (m.type === "run" && m.value) {
+      const sel = document.getElementById("runSelect");
+      if (sel && sel.value !== m.value && [...sel.options].some((o) => o.value === m.value)) { sel.value = m.value; store.set("sigbg.run", m.value); start(); }
+    }
+  });
+
   // ------------------------------------------------------------------ theme
   function initTheme() {
     const btn = document.getElementById("themeBtn");
@@ -1292,4 +1770,5 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
   window.addEventListener("resize", setHdr);
   initTheme();
   if (initRuns()) start();
+  tellShell({ type: "ready" });
 })();
