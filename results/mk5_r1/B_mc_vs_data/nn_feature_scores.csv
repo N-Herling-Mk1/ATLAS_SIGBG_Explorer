@@ -1,0 +1,57 @@
+block,region,list_name,column,resolved_by,scored_as,D_equal,D_crit,D_mass_min,D_mass_max,rank_in_region,n_features
+NN1 barrel,barrel,nMSeg_ratio_BIBM,nMSeg_ratio_BIBM,exact,nMSeg_ratio_BIBM,0.26259706135430005,0.05108103268842951,0.24220350356713677,0.3127045098876093,49,98
+NN1 barrel,barrel,track_scalar_sum_pt_barrel,track_scalar_sum_pt_barrel,exact,track_scalar_sum_pt_barrel,0.26450964635372765,0.05108103268842951,0.18284041097078985,0.3265993265993413,48,98
+NN1 barrel,barrel,MS1Vtx_clusE,MS1Vtx_barrel_clusE,region-tagged (barrel),msvtx_caloClusterSumE,0.30991638403554167,0.05108103268842951,0.2815672732446075,0.3425853734601623,32,98
+NN1 barrel,barrel,MS1Vtx_avg_clusE,MS1Vtx_barrel_avg_clusE,region-tagged (barrel),MS1Vtx_avg_clusE_raw,0.3037025511980885,0.05108103268842951,0.2515746453006329,0.333038792730048,35,98
+NN1 barrel,barrel,MS1Vtx_rms_clusE,MS1Vtx_barrel_rms_clusE,region-tagged (barrel),MS1Vtx_rms_clusE_raw,0.29898784313765536,0.05108103268842951,0.26134585289514844,0.33106363809623135,36,98
+NN1 barrel,barrel,MS1Vtx_maxclusE,MS1Vtx_barrel_maxclusE,region-tagged (barrel),MS1Vtx_maxclusE_raw,0.31215932367627985,0.05108103268842951,0.2754174265057767,0.33212051908450163,31,98
+NN1 barrel,barrel,MS1Vtx_l1ecal,MS1Vtx_barrel_l1ecal,region-tagged (barrel),msvtx_el1ecal,0.23467035670593372,0.05108103268842951,0.18665528524683128,0.2670651563121169,55,98
+NN1 barrel,barrel,MS1Vtx_l1hcal,MS1Vtx_barrel_l1hcal,region-tagged (barrel),msvtx_el1hcal,,0.05108103268842951,,,98,98
+NN1 barrel,barrel,MS1Vtx_l2ecal,MS1Vtx_barrel_l2ecal,region-tagged (barrel),msvtx_el2ecal,0.2673893139434963,0.05108103268842951,0.21754678668891447,0.3214650796125954,47,98
+NN1 barrel,barrel,MS1Vtx_l2hcal,MS1Vtx_barrel_l2hcal,region-tagged (barrel),msvtx_el2hcal,0.25926997691676934,0.05108103268842951,0.23871881426298303,0.2934490704645062,51,98
+NN1 barrel,barrel,MS1Vtx_l3ecal,MS1Vtx_barrel_l3ecal,region-tagged (barrel),msvtx_el3ecal,0.2933333805442141,0.05108103268842951,0.25064990493927386,0.3312888750281574,38,98
+NN1 barrel,barrel,MS1Vtx_l3hcal,MS1Vtx_barrel_l3hcal,region-tagged (barrel),msvtx_el3hcal,0.24039284504968828,0.05108103268842951,0.22430364248547696,0.2652078243844921,53,98
+NN1 barrel,barrel,MS1Vtx_l4ecal,MS1Vtx_barrel_l4ecal,region-tagged (barrel),msvtx_el4ecal,0.24258736490402555,0.05108103268842951,0.201347663575574,0.27196493234228936,52,98
+NN1 barrel,barrel,MS1Vtx_l4hcal,MS1Vtx_barrel_l4hcal,region-tagged (barrel),msvtx_el4hcal,0.16633372728830265,0.05108103268842951,0.1386593204775145,0.20231767094762132,61,98
+NN1 barrel,barrel,MS1Vtx_mindR_jetcut,MS1Vtx_barrel_mindR_jetcut,region-tagged (barrel),MS1Vtx_mindR_jetcut_raw,0.36515642635734025,0.05108103268842951,0.3072983354673451,0.432262014080223,23,98
+NN1 barrel,barrel,MS1Vtx_sumTrackPt0p2Cone,MS1Vtx_barrel_sumTrackPt0p2Cone,region-tagged (barrel),msvtx_trackSoftSumPt_NOSYS,0.11051894368322546,0.05108103268842951,0.09242876912529563,0.11851027760115296,73,98
+NN1 barrel,barrel,msvtx_caloClusterSumPtScalar,msvtx_caloClusterSumPtScalar,exact,msvtx_caloClusterSumPtScalar,0.30747584619361545,0.05108103268842951,0.28370775617894495,0.3468995270024463,34,98
+NN1 barrel,barrel,msegUnAssoc_counts/nBIL,msegUnAssoc_counts/nBIL,exact,msegUnAssoc_counts/nBIL,0.15177349490015138,0.05108103268842951,0.10222857950130747,0.2433251901519489,65,98
+NN1 barrel,barrel,msegUnAssoc_counts/nBML,msegUnAssoc_counts/nBML,exact,msegUnAssoc_counts/nBML,0.27669473975278486,0.05108103268842951,0.05277474574215524,0.47327823691460935,44,98
+NN1 barrel,barrel,msegUnAssoc_counts/nBOL,msegUnAssoc_counts/nBOL,exact,nBOL_NOSYS,0.31860159730318605,0.05108103268842951,0.14186461527800331,0.5078665442301902,28,98
+NN1 endcap,endcap,nMSeg_ratio_EIEM,nMSeg_ratio_EIEM,exact,nMSeg_ratio_EIEM,0.08592365874238383,0.021562605440801044,0.07786214251835633,0.17712951038368718,81,98
+NN1 endcap,endcap,track_scalar_sum_pt_endcap,track_scalar_sum_pt_endcap,exact,track_scalar_sum_pt_endcap,0.2864931243940332,0.021562605440801044,0.25075917467499387,0.3466630777580413,48,98
+NN1 endcap,endcap,MS1Vtx_clusE,MS1Vtx_endcap_clusE,region-tagged (endcap),msvtx_caloClusterSumE,0.38273627782253994,0.021562605440801044,0.3717568795623677,0.39582172383696357,26,98
+NN1 endcap,endcap,MS1Vtx_avg_clusE,MS1Vtx_endcap_avg_clusE,region-tagged (endcap),MS1Vtx_avg_clusE_raw,0.3611973513033521,0.021562605440801044,0.335558287378099,0.38201886697249143,35,98
+NN1 endcap,endcap,MS1Vtx_rms_clusE,MS1Vtx_endcap_rms_clusE,region-tagged (endcap),MS1Vtx_rms_clusE_raw,0.3649682101702604,0.021562605440801044,0.34233654265945374,0.3843047753738637,32,98
+NN1 endcap,endcap,MS1Vtx_maxclusE,MS1Vtx_endcap_maxclusE,region-tagged (endcap),MS1Vtx_maxclusE_raw,0.37445735728374424,0.021562605440801044,0.35117960794062875,0.38626505792492416,29,98
+NN1 endcap,endcap,MS1Vtx_l1ecal,MS1Vtx_endcap_l1ecal,region-tagged (endcap),msvtx_el1ecal,0.32394035954764544,0.021562605440801044,0.3068825921377103,0.3372439281690519,42,98
+NN1 endcap,endcap,MS1Vtx_l1hcal,MS1Vtx_endcap_l1hcal,region-tagged (endcap),msvtx_el1hcal,0.3129870960595952,0.021562605440801044,0.28757145168667386,0.3305306529685258,43,98
+NN1 endcap,endcap,MS1Vtx_l2ecal,MS1Vtx_endcap_l2ecal,region-tagged (endcap),msvtx_el2ecal,0.3433783234225691,0.021562605440801044,0.3357742325145998,0.36308121405483923,38,98
+NN1 endcap,endcap,MS1Vtx_l2hcal,MS1Vtx_endcap_l2hcal,region-tagged (endcap),msvtx_el2hcal,0.31149596873698115,0.021562605440801044,0.2987917669889538,0.32293693516932254,45,98
+NN1 endcap,endcap,MS1Vtx_l3ecal,MS1Vtx_endcap_l3ecal,region-tagged (endcap),msvtx_el3ecal,0.3637157453479831,0.021562605440801044,0.34890770635136564,0.38187066147080906,34,98
+NN1 endcap,endcap,MS1Vtx_l3hcal,MS1Vtx_endcap_l3hcal,region-tagged (endcap),msvtx_el3hcal,0.19283637927319064,0.021562605440801044,0.18374139269146972,0.19673148844865673,59,98
+NN1 endcap,endcap,MS1Vtx_l4ecal,MS1Vtx_endcap_l4ecal,region-tagged (endcap),msvtx_el4ecal,0.3366558839523173,0.021562605440801044,0.29300162722101786,0.36797790528842345,39,98
+NN1 endcap,endcap,MS1Vtx_l4hcal,MS1Vtx_endcap_l4hcal,region-tagged (endcap),msvtx_el4hcal,0.09421014648433323,0.021562605440801044,0.07986347219792855,0.10966967167506847,79,98
+NN1 endcap,endcap,MS1Vtx_mindR_jetcut,MS1Vtx_endcap_mindR_jetcut,region-tagged (endcap),MS1Vtx_mindR_jetcut_raw,0.3081094024782567,0.021562605440801044,0.2590012588317828,0.35551322799781115,46,98
+NN1 endcap,endcap,MS1Vtx_sumTrackPt0p2Cone,MS1Vtx_endcap_sumTrackPt0p2Cone,region-tagged (endcap),msvtx_trackSoftSumPt_NOSYS,0.13990241349144872,0.021562605440801044,0.13601382217133462,0.143430311898899,65,98
+NN2 barrel,barrel,MSTracklet_barrel_avg_dR,MSTracklet_barrel_avg_dR,exact,MSTracklet_barrel_avg_dR,0.09695715894066526,0.05108103268842951,0.06675590734491732,0.1496173859810257,77,98
+NN2 barrel,barrel,MSTracklet_barrel_rms_dR,MSTracklet_barrel_rms_dR,exact,MSTracklet_barrel_rms_dR,0.09695715894066526,0.05108103268842951,0.0658376336993709,0.1496173859810257,78,98
+NN2 barrel,barrel,MSeg_barrel_avg_dR,MSeg_barrel_avg_dR,exact,MSeg_barrel_avg_dR,0.3659618060864071,0.05108103268842951,0.10116603427066534,0.6449341903887456,22,98
+NN2 barrel,barrel,MSeg_barrel_rms_dR,MSeg_barrel_rms_dR,exact,MSeg_barrel_rms_dR,0.29677792207676507,0.05108103268842951,0.13297641942581884,0.5840220385675,37,98
+NN2 barrel,barrel,MS1Vtx_barrel_hits_ntot,MS1Vtx_barrel_hits_ntot,exact,MS1Vtx_barrel_hits_ntot,0.6315635186679001,0.05108103268842951,0.4045428556577861,0.8336088154270133,13,98
+NN2 barrel,barrel,MSVtx_MET_dphi,MSVtx_MET_barrel_dphi,region-tagged (barrel),MSVtx_MET_dphi_raw,0.4293166996646129,0.05108103268842951,0.33248872716309213,0.6204296485986633,19,98
+NN2 barrel,barrel,MS1Vtx_maxclustime,MS1Vtx_barrel_maxclustime,region-tagged (barrel),MS1Vtx_maxclustime_raw,0.27434361394903944,0.05108103268842951,0.22060554326879822,0.32215811632621555,45,98
+NN2 barrel,barrel,MS1Vtx_avg_clustime,MS1Vtx_barrel_avg_clustime,region-tagged (barrel),MS1Vtx_avg_clustime_raw,0.15712532175644556,0.05108103268842951,0.10800062080470907,0.19900549231594933,63,98
+NN2 barrel,barrel,MS1Vtx_rms_clustime,MS1Vtx_barrel_rms_clustime,region-tagged (barrel),MS1Vtx_rms_clustime_raw,0.26153707449239544,0.05108103268842951,0.21784425561634524,0.3168737113848633,50,98
+NN2 barrel,barrel,MS1Vtx_nTracklet,MS1Vtx_barrel_nTracklet,region-tagged (barrel),msvtx_nTrk,0.44239159599524763,0.05108103268842951,0.41779718280576206,0.4752984389348164,17,98
+NN2 endcap,endcap,MSTracklet_endcap_avg_dR,MSTracklet_endcap_avg_dR,exact,MSTracklet_endcap_avg_dR,0.3987615760240874,0.021562605440801044,0.29694413077086446,0.5022865854791863,20,98
+NN2 endcap,endcap,MSTracklet_endcap_rms_dR,MSTracklet_endcap_rms_dR,exact,MSTracklet_endcap_rms_dR,0.3987615760240874,0.021562605440801044,0.29694413077086446,0.5022865854791863,21,98
+NN2 endcap,endcap,MSeg_endcap_avg_dR,MSeg_endcap_avg_dR,exact,MSeg_endcap_avg_dR,0.46239143568932745,0.021562605440801044,0.2347686964219875,0.66698631065977,18,98
+NN2 endcap,endcap,MSeg_endcap_rms_dR,MSeg_endcap_rms_dR,exact,MSeg_endcap_rms_dR,0.38357366327883946,0.021562605440801044,0.18034150926736553,0.5938128987684429,24,98
+NN2 endcap,endcap,MS1Vtx_endcap_hits_ntot,MS1Vtx_endcap_hits_ntot,exact,MS1Vtx_endcap_hits_ntot,0.7175220833382289,0.021562605440801044,0.5532207067169523,0.8643499618250189,5,98
+NN2 endcap,endcap,MSVtx_MET_dphi,MSVtx_MET_endcap_dphi,region-tagged (endcap),MSVtx_MET_dphi_raw,0.37541972668001405,0.021562605440801044,0.27261788978643975,0.5075502438797186,28,98
+NN2 endcap,endcap,MS1Vtx_maxclustime,MS1Vtx_endcap_maxclustime,region-tagged (endcap),MS1Vtx_maxclustime_raw,0.3560258605637405,0.021562605440801044,0.34540027700420356,0.37053232351485127,37,98
+NN2 endcap,endcap,MS1Vtx_avg_clustime,MS1Vtx_endcap_avg_clustime,region-tagged (endcap),MS1Vtx_avg_clustime_raw,0.22933739934520325,0.021562605440801044,0.21773721654652278,0.2377826308707962,55,98
+NN2 endcap,endcap,MS1Vtx_rms_clustime,MS1Vtx_endcap_rms_clustime,region-tagged (endcap),MS1Vtx_rms_clustime_raw,0.3352773255819368,0.021562605440801044,0.30861989483624364,0.3561682858866948,40,98
+NN2 endcap,endcap,MS1Vtx_nTracklet,MS1Vtx_endcap_nTracklet,region-tagged (endcap),msvtx_nTrk,0.6056103226696563,0.021562605440801044,0.5506091770008446,0.6425643942905033,12,98

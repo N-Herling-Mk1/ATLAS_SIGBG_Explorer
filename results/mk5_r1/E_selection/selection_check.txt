@@ -1,0 +1,24 @@
+SELECTION CHECK
+==============================================================================
+background htmiss_NOSYS max      40.00 GeV
+signal     htmiss_NOSYS min      40.00 GeV   (over 6 mass points)
+samples disjoint in htmiss_NOSYS: YES
+
+met_met_NOSYS: background median 18.91 GeV, 52.46% below 20 GeV; signal minimum 20.07 GeV
+
+jet multiplicity (fraction), region all:
+  sample              0       1       2       3      4+        n
+  bkg             0.428   0.361   0.126   0.056   0.029   36,059
+  mH125_mS15      0.007   0.360   0.311   0.170   0.153      570
+  mH125_mS55      0.000   0.314   0.331   0.187   0.168      423
+  mH200_mS50      0.000   0.318   0.311   0.204   0.167    1,520
+  mH400_mS100     0.000   0.234   0.319   0.220   0.227    3,792
+  mH600_mS150     0.000   0.222   0.285   0.231   0.262    4,490
+  mH1000_mS275    0.000   0.130   0.239   0.246   0.385    4,188
+
+background: jet_n x htmissScalar band (GeV):
+  jets 0   ~0: 15,429  1-40:      0  >40:      0
+  jets 1   ~0:      0  1-40: 13,020  >40:      0
+  jets 2   ~0:      0  1-40:      0  >40:  4,529
+  jets 3   ~0:      0  1-40:      0  >40:  2,023
+  jets 4+  ~0:      0  1-40:      0  >40:  1,058
