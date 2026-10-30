@@ -858,7 +858,10 @@ ${sel && sel.samples.bkg.met_median != null ? `
     ["endcap", "endcap D (rank)"], ["barrel", "barrel D (rank)"], ["all", "barrel + endcap D (rank)"],
     ["delta", "|D barrel − D endcap|"], ["shape_bkg", "shape D · background"], ["shape_sig", "shape D · signal"], ["name", "name"],
   ];
-  const splitList = () => (RUN.splits && RUN.splits.length ? RUN.splits : SPLIT_FALLBACK);
+  // sb_side (the Block A "separation" page) repeats the normalized panels of sb_endcap and sb_barrel side by side:
+  // not unique, so it is left out of every chooser. The page still exists in each feature PDF and in the PDF browser.
+  const DUP_SPLITS = ["sb_side"], DUP_PAGES = ["separation"];
+  const splitList = () => (RUN.splits && RUN.splits.length ? RUN.splits : SPLIT_FALLBACK).filter((s) => !DUP_SPLITS.includes(s.id));
   function splitPage(f, sp) {
     const pl = f[sp.block === "B" ? "plots_B" : "plots_A"];
     if (!pl) return null;
@@ -1432,14 +1435,15 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
   function viewerHTML(f, block, label, kicker) {
     const pl = f[block === "B" ? "plots_B" : "plots_A"];
     if (!pl) return `${vbanner(f, kicker, "all")}<p class="muted">No ${block === "B" ? "signal-vs-background" : "barrel-vs-endcap"} PDF for this feature.</p>`;
-    let k = pl.pages.findIndex((p) => p.label === label);
-    if (k < 0) k = block === "B" ? Math.min(1, pl.pages.length - 1) : 0;
+    const shown = pl.pages.map((p, i) => [p, i]).filter(([p]) => !DUP_PAGES.includes(p.label));
+    let k = pl.pages.findIndex((p) => p.label === label && !DUP_PAGES.includes(p.label));
+    if (k < 0) k = block === "B" ? Math.min(1, pl.pages.length - 1) : (shown.length ? shown[0][1] : 0);
     const pg = pl.pages[k], type = pageType(pg.label), tone = REGION_TONE[pg.label] || "all";
     const tabName = (l) => (l === "overview" ? "overview (text)" : l === "separation" ? "endcap | barrel separation" : l === "shape" ? "barrel vs endcap shape" : l);
     return `<div class="pv" data-type="${type}">
       ${vbanner(f, kicker, tone)}
       <div class="pv-bar">
-        <div class="seg pv-tabs">${pl.pages.map((p, i) => `<button type="button" data-l="${esc(p.label)}" class="${i === k ? "on " + (REGIONS.includes(p.label) ? p.label : "") : ""}">${esc(tabName(p.label))}</button>`).join("")}</div>
+        <div class="seg pv-tabs">${shown.map(([p, i]) => `<button type="button" data-l="${esc(p.label)}" class="${i === k ? "on " + (REGIONS.includes(p.label) ? p.label : "") : ""}">${esc(tabName(p.label))}</button>`).join("")}</div>
         <div class="pv-dl">
           <button class="btn sm" type="button" data-listtoggle title="show or hide the feature list">${ui.mvHide ? "show list" : "hide list"}</button>
           <a class="btn sm" href="${esc(pl.pdf)}#page=${k + 1}" target="_blank" rel="noopener" title="open the original vector PDF at this page">open PDF p${k + 1}</a>
@@ -1540,7 +1544,7 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
           <p class="home-warn">Before trusting any ranking, read <a href="#/findings">Findings</a>: the background is selected at HTmiss &lt; 40 GeV and signal at &ge; 40 GeV, so HTmiss- and jet-related variables separate by construction.</p>
         </div>
         <div class="home-rows">
-          ${row("01", "Features", "one variable at a time, every plot", card("be", "Barrel – Endcap", "every feature, region against region", "How each variable's background and signal shapes differ between barrel and endcap, and where it separates signal from background. Two pages per feature: shape, and endcap | barrel separation.") +
+          ${row("01", "Features", "one variable at a time, every plot", card("be", "Barrel – Endcap", "every feature, region against region", "How each variable's shape differs between barrel and endcap, for the background and for the combined signal, raw and normalized, with the barrel–endcap shape distance.") +
             card("sb", "Signal – Background", "every feature, MC signal against data background", "KS separation per region and mass point, with the full plot set: each mass point, combined signal, background alone, raw and normalized."))}
           ${row("02", "NN suggestions", "prototype input sets P0–P3", card("gbe", "Barrel – Endcap", "candidate NN1 / NN2 input sets", "The pipeline's prototype input sets P0–P3, member by member, with each member's barrel-vs-endcap plots.") +
             card("gsb", "Signal – Background", "candidate NN1 / NN2 input sets", "The same prototype sets with each member's signal-vs-background page in the chosen region, the surrogate AUCs, and one-click group PDFs."))}
@@ -1555,7 +1559,7 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
   VIEWS.be = function (arg) {
     const [pageArg, nameArg] = splitArg(arg, 2);
     ui.beSort = ui.beSort || "delta"; ui.beSep = ui.beSep || "all";
-    const page = ["shape", "separation"].includes(pageArg) ? pageArg : (ui.bePage || "shape");
+    const page = "shape";   // the separation page repeats Signal-Background content (DUP_PAGES)
     ui.bePage = page;
     let list = RUN.features.filter((f) => f.A);
     const q = (ui.beQ || "").trim().toLowerCase();
@@ -1570,7 +1574,7 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
     list.sort(ui.beSort === "name" ? (a, b) => a.name.localeCompare(b.name) : (a, b) => key(b) - key(a) || a.name.localeCompare(b.name));
     const f = feat(nameArg) && list.some((x) => x.name === nameArg) ? feat(nameArg) : list[0];
     const go = (name, pg) => { location.hash = "#/be/" + encodeURIComponent((pg || page) + "|" + name); };
-    const beSplits = (RUN.splits || []).filter((s) => s.block === "A");
+    const beSplits = splitList().filter((s) => s.block === "A");
     app.innerHTML = `
       ${dlBar(beSplits, (beSplits.find((s) => s.label === page) || {}).id, "barrel – endcap")}
       <div class="mv">
@@ -1591,7 +1595,7 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
         </aside>
         <section class="mv-main">${f ? viewerHTML(f, "A", page, "barrel – endcap") +
           `<p class="small muted pv-foot">Every feature's ${page} page in one PDF:
-            ${(RUN.splits || []).filter((s) => s.block === "A").map((s) => s.bundle ? `<a href="${esc(s.bundle.href)}" download>${esc(s.title)} · ${s.bundle.pages} p</a>` : "").join(" · ")}</p>`
+            ${splitList().filter((s) => s.block === "A").map((s) => s.bundle ? `<a href="${esc(s.bundle.href)}" download>${esc(s.title)} · ${s.bundle.pages} p</a>` : "").join(" · ")}</p>`
           : `<p class="muted">No features match.</p>`}</section>
       </div>`;
     app.querySelectorAll(".mv-items li").forEach((li) => li.addEventListener("click", () => go(li.dataset.f)));
@@ -1627,7 +1631,7 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
     const page = ui.sbPage && ui.sbPage !== "region" ? ui.sbPage : region;
     const go = (name, reg) => { location.hash = "#/sb/" + encodeURIComponent((reg || region) + "|" + name); };
     const bundle = (RUN.splits || []).find((s) => s.id === "sb_" + region);
-    const sbSplits = REGIONS.map((r) => (RUN.splits || []).find((s) => s.id === "sb_" + r)).filter(Boolean);
+    const sbSplits = REGIONS.map((r) => splitList().find((s) => s.id === "sb_" + r)).filter(Boolean);
     app.innerHTML = `
       ${dlBar(sbSplits, "sb_" + region, "signal – background")}
       <div class="mv">
@@ -1816,7 +1820,7 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
     const plotRegions = inclusive ? ["all", "endcap", "barrel"] : regOpts;
     if (!plotRegions.includes(region)) region = plotRegions.includes(ui.gRegion) ? ui.gRegion : plotRegions[0];
     const netKey = inclusive ? `${net} inclusive` : `${net} ${region}`;
-    if (kind === "be" && !["shape", "separation"].includes(page)) page = ui.gPage || "shape";
+    if (kind === "be") page = "shape";
     Object.assign(ui, { gP: p, gNet: net, gRegion: region, gPage: page });
     const members = (P[p].nets[netKey] || []).map((n) => feat(n) || { name: n, regions: {}, missing: true });
     const scoreReg = region === "all" ? null : region;
@@ -1862,7 +1866,6 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
         <span class="gsel-l">set</span><div class="seg">${names.map((n) => `<a class="segl ${n === p ? "on" : ""}" href="${href(n, net, region, page)}" title="${esc(P[n].description)}">${esc(n)}</a>`).join("")}</div>
         <span class="gsel-l">network</span><div class="seg">${nnOpts.map((n) => `<a class="segl ${n === net ? "on" : ""}" href="${href(p, n, region, page)}">${esc(n)}</a>`).join("")}</div>
         <span class="gsel-l">${inclusive ? "plots from" : "region"}</span><div class="seg">${plotRegions.map((r) => `<a class="segl ${r === region ? "on " + r : ""}" href="${href(p, net, r, page)}">${esc(r)}</a>`).join("")}</div>
-        ${kind === "be" ? `<span class="gsel-l">page</span><div class="seg">${["shape", "separation"].map((g) => `<a class="segl ${g === page ? "on" : ""}" href="${href(p, net, region, g)}">${g}</a>`).join("")}</div>` : ""}
       </div>
 
       <section class="gvars">
