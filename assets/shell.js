@@ -6,6 +6,7 @@
   const runSel = document.getElementById("runSelect");
   const themeBtn = document.getElementById("themeBtn");
   const pop = document.getElementById("popOut");
+  const band = document.getElementById("bandTitle");
   const I = (window.SIGBG || {}).index;
   const store = {
     get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
@@ -51,7 +52,7 @@
     } else if (m.type === "route" && m.hash) {
       if (m.hash !== location.hash) history.replaceState(null, "", m.hash);
       highlight(m.hash);
-      if (m.title) document.title = m.title + " · SIG/BG Feature Explorer";
+      if (m.title) { document.title = m.title + " · SIG/BG Feature Explorer"; band.textContent = m.title; }
     }
   });
 
