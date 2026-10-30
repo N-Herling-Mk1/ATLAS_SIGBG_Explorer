@@ -720,6 +720,44 @@
           <td class="n">${fmt(f.regions.endcap && f.regions.endcap.D)}</td><td>${catChip(f) || '<span class="chip jet">not flagged</span>'}</td><td>${nnChips(f)}</td></tr>`).join("")}</tbody></table></div>
       <p class="small muted" style="margin-top:8px">Source: <code>${esc(m.source || "")}/bkg_split.csv</code> (${esc(m.cut || "")}; ${esc(m.meaning || "")}). Also on every feature page.</p>`;
   }
+  // How the NN input features are decided: the pool criteria (gambit_inputs) and the prototype sets (block D),
+  // stated from kj_sigbg_mk5.py with this run's thresholds and counts.
+  function decidedHTML() {
+    const pp = P(), W = pp.WEAK_D || 0.2, Sx = pp.SUSPICIOUS_D || 0.99, C = pp.CORR_BLOCK || 0.9;
+    const pe = ((RUN.pools || {}).endcap || []).length, pb = ((RUN.pools || {}).barrel || []).length;
+    const drops = {};
+    RUN.features.forEach((f) => Object.values(f.drop || {}).forEach((d) => { drops[d.category] = (drops[d.category] || 0) + 1; }));
+    const nd = (k) => drops[k] || 0;
+    return `<section class="decided">
+      <div class="eyebrow">the rule, in one place</div>
+      <h2>How the NN input features are decided</h2>
+      <p class="prose">Every numeric column present in the background file and in all six signal files is scored separately in the endcap and in the barrel.
+      The score is the two-sample Kolmogorov–Smirnov distance between data background and MC signal,
+      ${tex("D = \\sup_x \\left| F_{s}(x) - F_{b}(x) \\right|", true)}
+      where ${tex("F_s")} weights the six mass points equally, so no single mass point dominates (${tex("D_{\\text{equal}}")}).
+      Its noise floor is ${tex("D_{crit} = 1.36\\sqrt{1/n_s + 1/n_b}")}, the 95% KS critical value for these sample sizes.
+      A feature joins a region's candidate list only if it passes five tests, in this order:</p>
+      <ol class="decided-steps">
+        <li><b>Live</b>: not constant or empty in that region.</li>
+        <li><b>Physics, not selection</b>: not HTmiss-linked (background was selected at HTmiss &lt; 40 GeV and signal at &ge; 40 GeV, so these separate by construction; §1–2 below) and not trigger, quality or pileup.</li>
+        <li><b>Not suspicious</b>: no single mass point separates at ${tex("D \\ge " + Sx)}; that is a sign of a selection artefact, not physics.</li>
+        <li><b>Separates</b>: ${tex("D \\ge \\max(" + W + ",\\, 2D_{crit})")}.</li>
+        <li><b>Not redundant</b>: features whose background Spearman ${tex("|\\rho| \\ge " + C)} with every member of a block share that block, and only the block's strongest separator stays.</li>
+      </ol>
+      <p class="prose">The survivors, ranked by ${tex("D")}, are the candidate list: <b>${pe}</b> features in the endcap and <b>${pb}</b> in the barrel
+      (files <code>gambit_inputs/pool_endcap.txt</code>, <code>pool_barrel.txt</code>). This is the <b>Top features</b> list at the top of the
+      <a href="#/gsb">NN groupings</a> pages. The list says which variables carry signal information. It does not say which network each belongs in.</p>
+      <p class="prose"><b>P0–P3</b> are <b>prototype</b> NN1/NN2 input sets built from that list to test placement.
+      <b>P0</b> is the baseline: the current mk4 lists as they stand.
+      <b>P1</b> is P0 with the members that fail test 4 and the same-block duplicates removed.
+      <b>P2</b> is P1 plus every unused candidate with ${tex("D \\ge 0.5")} from a block not already used, each sent to the network it already correlates with more.
+      <b>P3</b> is one inclusive network per role on P1 endcap ${tex("\\cup")} P1 barrel, with a region-flag input.
+      Each prototype is scored by a gradient-boosted surrogate (5-fold out-of-fold AUC, mass points weighted equally) and by the
+      distance correlation between the NN1 and NN2 scores on background. The surrogate only nominates; final placement belongs to GAMBIT, with closure as referee.</p>
+      <p class="small muted">Removed from the candidate lists this run (feature × region): weak ${nd("weak")} · redundant ${nd("redundant")} · htmiss-linked ${nd("htmiss-linked")} ·
+      non-physics ${nd("non-physics")} · suspicious ${nd("suspicious")} · dead ${nd("dead")}. Every reason is in <code>gambit_inputs/drop_suggestions.txt</code> and on <a href="#/rankings">Rankings</a>.</p>
+    </section>`;
+  }
   VIEWS.findings = function () {
     const sel = RUN.selection;
     const hl = P().HTMISS_LINKED || [];
@@ -731,6 +769,8 @@
       <h1>Findings</h1>
       <p class="lede">How the two samples were selected, measured from the files themselves, and what that does to the separation scores.
       Measured facts and interpretation are kept apart: each section says which is which.</p>
+
+      ${decidedHTML()}
 
       <h2>1 · The samples are disjoint in <span class="k">HTmiss</span></h2>
       <p class="prose"><b>Measured.</b> Background (data, <code>DataHTMissLow</code>) has <code>htmiss_NOSYS</code> &lt; 40 GeV in every event; every signal event has
@@ -1472,9 +1512,12 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
   function dlBar(splits, primary, what) {
     const sp = splits.filter((x) => x.bundle).sort((a, b) => (b.id === primary) - (a.id === primary));
     if (!sp.length) return "";
-    return `<div class="dlbar"><div class="dlbar-l">Download all ${RUN.features.length} features<span>${esc(what)} · one PDF, one bookmark per feature</span></div>
-      ${sp.map((x) => `<a class="dlbtn ${x.id === primary ? "" : "alt"}" href="${esc(x.bundle.href)}" download title="${esc(x.desc || "")}">
-        <b>${esc(x.title.replace(/^.*? · /, ""))}</b><span>${x.bundle.pages} p · ${kb(x.bundle.bytes)} · PDF</span></a>`).join("")}</div>`;
+    return `<section class="dlbar" aria-label="Download every feature as one PDF">
+      <div class="dlbar-l"><span class="dlbar-k">look here first</span><b>Download all ${RUN.features.length} features</b>
+        <span class="dlbar-s">${esc(what)} · one PDF per split, one bookmark per feature</span></div>
+      <div class="dlbar-btns">${sp.map((x) => `<a class="dlbtn ${x.id === primary ? "" : "alt"}" href="${esc(x.bundle.href)}" download>
+        <b>${esc(x.title.replace(/^.*? · /, ""))}</b><span class="dlbtn-m">${x.bundle.pages} pages · ${kb(x.bundle.bytes)} · PDF ↓</span>
+        <span class="dlbtn-d">${esc(x.desc || "")}</span></a>`).join("")}</div></section>`;
   }
 
   // ---------------------------------------------------------------- HOME
@@ -1663,6 +1706,75 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
     }
     btn.disabled = false;
   }
+  // ---------------------------------------------------------------- TOP-X: the criteria-based list (gambit pool), no prototypes
+  const TOPN = [10, 15, 20, 0];   // 0 = all
+  function poolOf(r) { return ((RUN.pools || {})[r] || []).map((n) => feat(n)).filter(Boolean); }
+  function topxHTML(kind) {
+    const r = ["endcap", "barrel"].includes(ui.tRegion) ? ui.tRegion : "endcap";
+    const n = TOPN.includes(ui.tN) ? ui.tN : 15;
+    const pool = poolOf(r), list = n ? pool.slice(0, n) : pool;
+    if (!pool.length) return "";
+    const other = r === "endcap" ? "barrel" : "endcap";
+    const pct = (v) => (Math.max(0, Math.min(1, v || 0)) * 100).toFixed(2) + "%";
+    const W = P().WEAK_D || 0.2, S = 0.5;
+    const ticks = [0, 0.2, 0.4, 0.6, 0.8, 1].map((t) => `<span style="left:${pct(t)}">${t.toFixed(1)}</span>`).join("");
+    const guides = `<i class="tx-guide weak" style="left:${pct(W)}"></i><i class="tx-guide strong" style="left:${pct(S)}"></i>`;
+    const rows = list.map((f, i) => {
+      const x = f.regions[r] || {}, y = f.regions[other] || {};
+      const nn = (f.nn_lists || []).length ? `<span class="tx-nn" title="already in the current mk4 lists: ${esc(f.nn_lists.join(", "))}">mk4</span>` : "";
+      const hrefF = kind === "sb" ? `#/sb/${encodeURIComponent(r + "|" + f.name)}` : `#/be/${encodeURIComponent("shape|" + f.name)}`;
+      const bars = kind === "sb"
+        ? `<i class="tx-bar ${r}" style="width:${pct(x.D)}"></i><i class="tx-rng" style="left:${pct(x.D_min)};width:calc(${pct(x.D_max)} - ${pct(x.D_min)})"></i><i class="tx-noise" style="left:${pct(2 * (x.Dcrit || 0))}"></i>`
+        : `<i class="tx-bar endcap half" style="width:${pct(f.regions.endcap && f.regions.endcap.D)}"></i><i class="tx-bar barrel half lo" style="width:${pct(f.regions.barrel && f.regions.barrel.D)}"></i>`;
+      const val = kind === "sb" ? fmt(x.D) : `<span class="e">${fmt(f.regions.endcap && f.regions.endcap.D)}</span> <span class="b">${fmt(f.regions.barrel && f.regions.barrel.D)}</span>`;
+      return `<a class="tx-row" href="${hrefF}" data-f="${esc(f.name)}"><span class="tx-i">${i + 1}</span><span class="tx-name">${esc(f.name)}${nn}</span>
+        <span class="tx-track">${guides}${bars}</span><span class="tx-v">${val}</span></a>`;
+    }).join("");
+    return `<section class="topx" id="topx">
+      <div class="topx-head">
+        <div><div class="eyebrow">look here first · criteria-based, no prototypes</div>
+          <h2>Top ${n ? Math.min(n, pool.length) : pool.length} features · <span class="k">${r}</span> <span class="muted">of ${pool.length} that pass</span></h2></div>
+        <div class="topx-ctl">
+          <div class="seg">${["endcap", "barrel"].map((q) => `<button type="button" data-tr="${q}" class="${q === r ? "on " + q : ""}">${q}</button>`).join("")}</div>
+          <div class="seg">${TOPN.map((q) => `<button type="button" data-tn="${q}" class="${q === n ? "on" : ""}">${q ? "top " + q : "all " + pool.length}</button>`).join("")}</div>
+          <button class="btn sm" type="button" id="txcopy">copy list</button>
+          <a class="btn sm" href="results/${esc(RUN.name)}/gambit_inputs/pool_${r}.txt" download>pool_${r}.txt</a>
+        </div></div>
+      <p class="small muted topx-crit">Passes, in ${r}: live · not HTmiss-linked or non-physics · not suspicious (no mass point at D &ge; ${P().SUSPICIOUS_D || 0.99}) ·
+        separates (${tex("D \\ge \\max(" + W + ",\\,2D_{crit})")}) · strongest of its redundancy block (${tex("|\\rho| \\ge " + (P().CORR_BLOCK || 0.9))}). Ranked by equal-weight KS ${tex("D")}.
+        <a href="#/findings">How this list is decided →</a></p>
+      <ol class="topx-list">${list.map((f) => `<li>${esc(f.name)}</li>`).join("")}</ol>
+      <div class="tx-chart" role="img" aria-label="Bar chart of KS separation D for the listed features">
+        <div class="tx-legend">${kind === "sb"
+          ? `<span><i class="sw ${r}"></i>${tex("D")} equal-weight, ${r}</span><span><i class="sw rng"></i>range over the six mass points</span><span><i class="sw noise"></i>${tex("2D_{crit}")} noise</span>`
+          : `<span><i class="sw endcap"></i>${tex("D")} endcap</span><span><i class="sw barrel"></i>${tex("D")} barrel</span><span class="muted">ranked by ${r}</span>`}
+          <span><i class="sw weak"></i>${tex("D=" + W)} cut</span><span><i class="sw strong"></i>${tex("D=0.5")} strong</span><span><span class="tx-nn">mk4</span> already in a current list</span></div>
+        <div class="tx-axis"><span class="tx-i"></span><span class="tx-name"></span><span class="tx-track tx-ticks">${ticks}</span><span class="tx-v">${kind === "sb" ? "D" : "D e · b"}</span></div>
+        ${rows}
+      </div>
+    </section>`;
+  }
+  function bindTopx(rerender) {
+    const box = app.querySelector("#topx");
+    if (!box) return;
+    box.querySelectorAll("[data-tr]").forEach((b) => b.addEventListener("click", () => { ui.tRegion = b.dataset.tr; rerender(); }));
+    box.querySelectorAll("[data-tn]").forEach((b) => b.addEventListener("click", () => { ui.tN = +b.dataset.tn; rerender(); }));
+    const names = [...box.querySelectorAll(".topx-list li")].map((li) => li.textContent).join("\n");
+    box.querySelector("#txcopy").addEventListener("click", (e) => {
+      const b = e.currentTarget, done = (t) => { b.textContent = t; setTimeout(() => { b.textContent = "copy list"; }, 1400); };
+      if (navigator.clipboard) navigator.clipboard.writeText(names).then(() => done("copied"), () => download("top_features.txt", names)); else download("top_features.txt", names);
+    });
+    box.querySelectorAll(".tx-row").forEach((row) => {
+      const f = feat(row.dataset.f);
+      row.addEventListener("mousemove", (e) => {
+        const line = (r) => { const x = f.regions[r]; return x ? `<b>${r}</b> D ${fmt(x.D)} · rank ${x.rank} · noise ${fmt(x.Dcrit)} · pooled ${fmt(x.D_pooled)}<br>
+          <span class="mono small">${(x.per_mass || []).map((v, i) => `${short(RUN.masses[i])} ${fmt(v, 2)}`).join(" · ")}</span>` : ""; };
+        showTip(e, `<b>${esc(f.name)}</b><br>${line("endcap")}<br>${line("barrel")}${(f.nn_lists || []).length ? `<br>mk4: ${esc(f.nn_lists.join(", "))}` : ""}`);
+      });
+      row.addEventListener("mouseleave", hideTip);
+    });
+  }
+
   // crop a text-only summary page to its ink, so the printout reads at its native size without a page of white
   function trimPage(img) {
     if (img.dataset.trimmed) return;
@@ -1685,6 +1797,12 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
       img.src = o.toDataURL("image/png");
     } catch (e) { /* tainted canvas (file://): keep the full page */ }
   }
+  const PROTO_RULE = {
+    P0: "Baseline: the current mk4 NN1/NN2 lists exactly as they stand (names resolved to scored columns, duplicates collapsed).",
+    P1: "P0 minus every member that does not separate in its region (weak or dead) and minus same-block duplicates (|ρ| ≥ 0.9); the stronger member of a block is kept.",
+    P2: "P1 plus every unused feature from the list above with D ≥ 0.50 whose block is not already used; each goes to the net (NN1 or NN2) it already correlates with more.",
+    P3: "Inclusive: one net per role trained on both regions with a region-flag input; features = P1 endcap ∪ P1 barrel. Scored in each region.",
+  };
   function groupView(kind, arg) {
     const P = RUN.prototypes || {}, names = Object.keys(P).sort();
     if (!names.length) { app.innerHTML = `<h1>Suggested NN groupings</h1><p class="muted">This run has no prototype sets (block D).</p>`; return; }
@@ -1730,8 +1848,16 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
     const netHref = (nk) => { const [nn, rr] = nk.split(" "); return href(p, nn, rr === "inclusive" ? region : rr, page); };
     const listTxt = Object.entries(P[p].nets).map(([nk, l]) => `# ${nk} (${l.length})\n${l.join("\n")}`).join("\n\n");
     app.innerHTML = `
-      <div class="eyebrow">suggested NN feature groupings · ${kind === "sb" ? "signal – background" : "barrel – endcap"}</div>
-      <h1>${esc(p)} · ${esc(net)} · <span class="k">${esc(inclusive ? "inclusive" : region)}</span></h1>
+      <h1 class="gtitle">Suggested NN groupings · <span class="k">${kind === "sb" ? "signal – background" : "barrel – endcap"}</span></h1>
+      ${topxHTML(kind)}
+
+      <section class="protos">
+      <div class="protos-head">
+        <div class="eyebrow">suggested NN groupings · ${kind === "sb" ? "signal – background" : "barrel – endcap"} · built from the list above</div>
+        <h2 class="protos-title">Prototype input sets <span class="muted">P = prototype</span></h2>
+        <dl class="pdefs">${names.map((n) => `<div class="${n === p ? "on" : ""}"><dt>${esc(n)}</dt><dd>${esc(PROTO_RULE[n] || P[n].description)}</dd></div>`).join("")}</dl>
+      </div>
+      <h3 class="protos-now">${esc(p)} · ${esc(net)} · <span class="k">${esc(inclusive ? "inclusive" : region)}</span></h3>
       <div class="gpick">
         <span class="gsel-l">set</span><div class="seg">${names.map((n) => `<a class="segl ${n === p ? "on" : ""}" href="${href(n, net, region, page)}" title="${esc(P[n].description)}">${esc(n)}</a>`).join("")}</div>
         <span class="gsel-l">network</span><div class="seg">${nnOpts.map((n) => `<a class="segl ${n === net ? "on" : ""}" href="${href(p, n, region, page)}">${esc(n)}</a>`).join("")}</div>
@@ -1783,7 +1909,9 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
           <div class="gc-stat">${stat(m)} ${m.missing ? "" : catChip(m)}${!m.missing && kind === "sb" && jetDep(m, region) ? `<span class="chip jet">jet-dep</span>` : ""}</div>
           ${it ? `<img src="${esc(it.src)}" alt="${esc(it.caption)}" loading="lazy" data-n="${items.indexOf(it)}">` : `<div class="gnone">no ${esc(label)} page for this feature</div>`}
           ${pl ? `<div class="gc-dl"><a href="${esc(pl.pdf)}#page=${(it ? it.k : 0) + 1}" target="_blank" rel="noopener">open PDF p${(it ? it.k : 0) + 1}</a><a href="${esc(pl.pdf)}" download>download PDF</a></div>` : ""}
-        </article>`; }).join("")}</div>`;
+        </article>`; }).join("")}</div>
+      </section>`;
+    bindTopx(() => groupView(kind, arg));
     app.querySelectorAll(".gcards img[data-n]").forEach((img) => img.addEventListener("click", () => lightboxNav(items, +img.dataset.n)));
     app.querySelectorAll(".gprint img[data-pr]").forEach((img) => {
       img.addEventListener("click", () => lightboxNav(prItems, +img.dataset.pr));

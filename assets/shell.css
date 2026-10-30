@@ -39,9 +39,13 @@ body.shell { margin: 0; display: grid; grid-template-columns: 272px minmax(0, 1f
 .band { position: relative; display: flex; justify-content: center; align-items: center; padding: 12px 20px 13px; background: var(--bg);
   border-bottom: 2px solid var(--accent); box-shadow: 0 1px 0 rgba(255, 59, 31, .35), 0 8px 22px -14px rgba(255, 59, 31, .55); z-index: 1; }
 :root[data-theme="light"] .band { box-shadow: none; }
-.band-title { margin: 0; padding: 7px 34px; border: 2px solid var(--accent); border-radius: 999px; background: var(--accent-soft);
-  font: 900 15px/1.1 var(--display); letter-spacing: .18em; text-transform: uppercase; color: var(--accent-ink); text-shadow: var(--text-glow);
-  box-shadow: var(--glow-soft); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.band-home { padding: 8px 38px; border: 2px solid var(--accent); border-radius: 999px; background: var(--accent-soft); text-decoration: none;
+  font: 900 15px/1.1 var(--display); letter-spacing: .18em; color: var(--accent-ink); text-shadow: var(--text-glow); box-shadow: var(--glow-soft);
+  transition: background .15s, color .15s, box-shadow .15s; }
+.band-home:hover, .band-home:focus-visible { background: var(--accent); color: var(--on-accent); box-shadow: var(--glow); text-shadow: none; outline: none; }
+.band-home.on { background: var(--accent); color: var(--on-accent); text-shadow: none; }
+.band-page { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); max-width: calc(50% - 120px); overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; font: 700 11.5px var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--ink2); }
 @media (max-width: 860px) {
   body.shell { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); }
   .side { border-right: 0; border-bottom: 1px solid var(--rule); box-shadow: 0 1px 0 var(--accent); }
@@ -50,7 +54,8 @@ body.shell { margin: 0; display: grid; grid-template-columns: 272px minmax(0, 1f
   .side-toggle { display: inline-block; margin-left: auto; font: 600 12px/1 var(--sans); border: 1px solid var(--rule); background: var(--bg); color: var(--ink); padding: 8px 12px; border-radius: 4px; cursor: pointer; }
   .side-nav, .side-foot, .side-art { display: none; }
   .band { padding: 8px 12px; }
-  .band-title { font-size: 12px; padding: 5px 18px; }
+  .band-home { font-size: 12px; padding: 6px 22px; }
+  .band-page { display: none; }
   body.nav-open .side { position: fixed; inset: 0; z-index: 20; }
   body.nav-open .side-top { border-bottom: 1px solid var(--grid); }
   body.nav-open .side-nav { display: block; }
