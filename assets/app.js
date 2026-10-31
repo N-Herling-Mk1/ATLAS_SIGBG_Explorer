@@ -731,7 +731,7 @@
     return `<section class="decided">
       <div class="eyebrow">the rule, in one place</div>
       <h2>How the NN input features are decided</h2>
-      <p class="prose">Every numeric column present in the background file and in all six signal files is scored separately in the endcap and in the barrel.
+      <p class="prose">Every numeric column (feature) present in the background file and in all six signal files is scored separately in the endcap and in the barrel.
       The score is the two-sample Kolmogorov–Smirnov distance between data background and MC signal,
       ${tex("D = \\sup_x \\left| F_{s}(x) - F_{b}(x) \\right|", true)}
       where ${tex("F_s")} weights the six mass points equally, so no single mass point dominates (${tex("D_{\\text{equal}}")}).
@@ -1711,13 +1711,27 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
     btn.disabled = false;
   }
   // ---------------------------------------------------------------- TOP-X: the criteria-based list (gambit pool), no prototypes
-  const TOPN = [10, 15, 20, 0];   // 0 = all
+  const TOPN = [10, 15, 20, 0, -1];   // 0 = all that pass, -1 = every feature present, graded
   function poolOf(r) { return ((RUN.pools || {})[r] || []).map((n) => feat(n)).filter(Boolean); }
+  // every feature, ranked by its D in region r (pipeline rank, then D); features with no D in r go last
+  function everyOf(r) {
+    const k = (f) => { const x = f.regions[r]; return x && x.D != null ? [x.rank || 1e9, -x.D] : [2e9, 0]; };
+    return RUN.features.slice().sort((a, b) => { const p = k(a), q = k(b); return p[0] - q[0] || p[1] - q[1] || a.name.localeCompare(b.name); });
+  }
+  // grade of a feature in region r: passes (in the pool) or the pipeline's drop category + reason
+  function gradeOf(f, r) {
+    if ((f.pool || []).includes(r)) return { pass: true, cat: "pass", reason: "in the " + r + " candidate pool" };
+    const d = f.drop && f.drop[r];
+    return d ? { pass: false, cat: d.category, reason: d.reason } : { pass: false, cat: "no D", reason: "not scored in " + r };
+  }
   function topxHTML(kind) {
     const r = ["endcap", "barrel"].includes(ui.tRegion) ? ui.tRegion : "endcap";
     const n = TOPN.includes(ui.tN) ? ui.tN : 15;
-    const pool = poolOf(r), list = n ? pool.slice(0, n) : pool;
+    const every = n === -1;
+    const pool = poolOf(r), list = every ? everyOf(r) : n ? pool.slice(0, n) : pool;
     if (!pool.length) return "";
+    const gChip = (f) => { if (!every) return ""; const g = gradeOf(f, r);
+      return `<span class="chip ${g.pass ? "pool" : "drop"} tx-grade" title="${esc(g.reason)}">${esc(g.cat)}</span>`; };
     const other = r === "endcap" ? "barrel" : "endcap";
     const pct = (v) => (Math.max(0, Math.min(1, v || 0)) * 100).toFixed(2) + "%";
     const W = P().WEAK_D || 0.2, S = 0.5;
@@ -1731,23 +1745,25 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
         ? `<i class="tx-bar ${r}" style="width:${pct(x.D)}"></i><i class="tx-rng" style="left:${pct(x.D_min)};width:calc(${pct(x.D_max)} - ${pct(x.D_min)})"></i><i class="tx-noise" style="left:${pct(2 * (x.Dcrit || 0))}"></i>`
         : `<i class="tx-bar endcap half" style="width:${pct(f.regions.endcap && f.regions.endcap.D)}"></i><i class="tx-bar barrel half lo" style="width:${pct(f.regions.barrel && f.regions.barrel.D)}"></i>`;
       const val = kind === "sb" ? fmt(x.D) : `<span class="e">${fmt(f.regions.endcap && f.regions.endcap.D)}</span> <span class="b">${fmt(f.regions.barrel && f.regions.barrel.D)}</span>`;
-      return `<a class="tx-row" href="${hrefF}" data-f="${esc(f.name)}"><span class="tx-i">${i + 1}</span><span class="tx-name">${esc(f.name)}${nn}</span>
+      const fail = every && !gradeOf(f, r).pass ? " fail" : "";
+      return `<a class="tx-row${fail}" href="${hrefF}" data-f="${esc(f.name)}"><span class="tx-i">${i + 1}</span><span class="tx-name">${esc(f.name)}${nn}${gChip(f)}</span>
         <span class="tx-track">${guides}${bars}</span><span class="tx-v">${val}</span></a>`;
     }).join("");
     return `<section class="topx" id="topx">
       <div class="topx-head">
         <div><div class="eyebrow">look here first · criteria-based, no prototypes</div>
-          <h2>Top ${n ? Math.min(n, pool.length) : pool.length} features · <span class="k">${r}</span> <span class="muted">of ${pool.length} that pass</span></h2></div>
+          <h2>${every ? `All ${list.length} features, graded` : `Top ${n ? Math.min(n, pool.length) : pool.length} features`} · <span class="k">${r}</span> <span class="muted">${every ? `${pool.length} pass` : `of ${pool.length} that pass`}</span></h2></div>
         <div class="topx-ctl">
           <div class="seg">${["endcap", "barrel"].map((q) => `<button type="button" data-tr="${q}" class="${q === r ? "on " + q : ""}">${q}</button>`).join("")}</div>
-          <div class="seg">${TOPN.map((q) => `<button type="button" data-tn="${q}" class="${q === n ? "on" : ""}">${q ? "top " + q : "all " + pool.length}</button>`).join("")}</div>
+          <div class="seg">${TOPN.map((q) => `<button type="button" data-tn="${q}" class="${q === n ? "on" : ""}" ${q === -1 ? `title="every feature present, ranked by D in ${r}, each marked pass or with the reason it is dropped"` : q === 0 ? `title="every feature that passes the criteria in ${r}"` : ""}>${q > 0 ? "top " + q : q === 0 ? "pass " + pool.length : "all " + RUN.features.length}</button>`).join("")}</div>
           <button class="btn sm" type="button" id="txcopy">copy list</button>
           <a class="btn sm" href="results/${esc(RUN.name)}/gambit_inputs/pool_${r}.txt" download>pool_${r}.txt</a>
         </div></div>
       <p class="small muted topx-crit">Passes, in ${r}: live · not HTmiss-linked or non-physics · not suspicious (no mass point at D &ge; ${P().SUSPICIOUS_D || 0.99}) ·
         separates (${tex("D \\ge \\max(" + W + ",\\,2D_{crit})")}) · strongest of its redundancy block (${tex("|\\rho| \\ge " + (P().CORR_BLOCK || 0.9))}). Ranked by equal-weight KS ${tex("D")}.
-        <a href="#/findings">How this list is decided →</a></p>
-      <ol class="topx-list">${list.map((f) => `<li>${esc(f.name)}</li>`).join("")}</ol>
+        <a href="#/findings">How this list is decided →</a>${every ? `<br><b>all</b>: every feature present, ranked by ${tex("D")} in ${r}. Each is marked <span class="chip pool">pass</span> or with the
+        <span class="chip drop">reason</span> it is left out (hover for the detail); failing features are dimmed.` : ""}</p>
+      <ol class="topx-list">${list.map((f) => `<li data-n="${esc(f.name)}"${every && !gradeOf(f, r).pass ? ' class="fail"' : ""}>${esc(f.name)}${every ? ` <span class="tx-g">${esc(gradeOf(f, r).cat)}</span>` : ""}</li>`).join("")}</ol>
       <div class="tx-chart" role="img" aria-label="Bar chart of KS separation D for the listed features">
         <div class="tx-legend">${kind === "sb"
           ? `<span><i class="sw ${r}"></i>${tex("D")} equal-weight, ${r}</span><span><i class="sw rng"></i>range over the six mass points</span><span><i class="sw noise"></i>${tex("2D_{crit}")} noise</span>`
@@ -1763,7 +1779,7 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
     if (!box) return;
     box.querySelectorAll("[data-tr]").forEach((b) => b.addEventListener("click", () => { ui.tRegion = b.dataset.tr; rerender(); }));
     box.querySelectorAll("[data-tn]").forEach((b) => b.addEventListener("click", () => { ui.tN = +b.dataset.tn; rerender(); }));
-    const names = [...box.querySelectorAll(".topx-list li")].map((li) => li.textContent).join("\n");
+    const names = [...box.querySelectorAll(".topx-list li")].map((li) => li.dataset.n + (li.querySelector(".tx-g") ? "\t" + li.querySelector(".tx-g").textContent : "")).join("\n");
     box.querySelector("#txcopy").addEventListener("click", (e) => {
       const b = e.currentTarget, done = (t) => { b.textContent = t; setTimeout(() => { b.textContent = "copy list"; }, 1400); };
       if (navigator.clipboard) navigator.clipboard.writeText(names).then(() => done("copied"), () => download("top_features.txt", names)); else download("top_features.txt", names);
