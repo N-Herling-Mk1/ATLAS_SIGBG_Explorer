@@ -755,3 +755,8 @@ td.pc, th.pc { text-align: center; padding-left: 4px; padding-right: 4px; font: 
 td.pc.y { color: var(--ok); }
 td.pc.n { color: var(--ink3); }
 table.eda-all td:first-child { overflow-wrap: anywhere; }
+/* EDA column table: "input files" group header over the 7 file columns; both header rows stay put while scrolling */
+table.eda-all thead tr.grp th { height: 30px; box-sizing: border-box; }
+table.eda-all thead tr.sub th { top: 30px; }
+table.eda-all th.grp-h { border-bottom: 2px solid var(--accent); color: var(--ink); letter-spacing: .14em; }
+table.eda-all .grp-s { font: 11px var(--sans); letter-spacing: 0; text-transform: none; color: var(--ink3); margin-left: 8px; }

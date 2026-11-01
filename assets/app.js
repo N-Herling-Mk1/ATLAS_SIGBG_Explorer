@@ -779,7 +779,9 @@
         <label>file <select id="edaF"><option value="all">any</option>${labels.map((l) => `<option value="in:${l}" ${EDA_ST.file === "in:" + l ? "selected" : ""}>in ${esc(l)}</option><option value="out:${l}" ${EDA_ST.file === "out:" + l ? "selected" : ""}>missing from ${esc(l)}</option>`).join("")}</select></label>
         <button class="btn sm" type="button" id="edaCsv">download CSV</button>
       </div>
-      <div class="tablewrap eda-scroll tall"><table class="eda-all"><thead><tr><th>column</th>${labels.map((l) => `<th class="pc" title="${esc(fileName(l))}">${esc(short(l))}</th>`).join("")}<th>status</th><th>flags</th></tr></thead>
+      <div class="tablewrap eda-scroll tall"><table class="eda-all"><thead>
+        <tr class="grp"><th rowspan="2">column</th><th class="pc grp-h" colspan="${labels.length}">input files <span class="grp-s">signal: m<sub>H</sub> / m<sub>S</sub> in GeV</span></th><th rowspan="2">status</th><th rowspan="2">flags</th></tr>
+        <tr class="sub">${labels.map((l) => `<th class="pc" title="${esc(fileName(l))}">${esc(short(l))}</th>`).join("")}</tr></thead>
         <tbody>${rows.map((r) => `<tr data-n="${esc(r.c.toLowerCase())}" data-st="${r.st}${r.flags.length ? " flagged" : ""}" data-in="${labels.filter((l) => sets[l].has(r.c)).join(" ")}">
           <td>${r.f ? `<a class="fname" href="#/feature/${fid(r.c)}">${esc(r.c)}</a>` : `<span class="mono">${esc(r.c)}</span>`}</td>${pres(r.c)}
           <td><span class="chip ${r.st === "scored" ? "pool" : r.st === "excluded" ? "nonphys" : ""}">${esc(r.st)}</span>${r.why ? ` <span class="small muted">${esc(r.why)}</span>` : ""}</td>
