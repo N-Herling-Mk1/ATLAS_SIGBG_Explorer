@@ -725,9 +725,24 @@
   function decidedHTML() {
     const pp = P(), W = pp.WEAK_D || 0.2, Sx = pp.SUSPICIOUS_D || 0.99, C = pp.CORR_BLOCK || 0.9;
     const pe = ((RUN.pools || {}).endcap || []).length, pb = ((RUN.pools || {}).barrel || []).length;
-    const drops = {};
-    RUN.features.forEach((f) => Object.values(f.drop || {}).forEach((d) => { drops[d.category] = (drops[d.category] || 0) + 1; }));
-    const nd = (k) => drops[k] || 0;
+    // grade counts per region: pass = in the pool, otherwise the first test the feature fails (drop_suggestions.txt)
+    const cnt = { endcap: {}, barrel: {} };
+    RUN.features.forEach((f) => ["endcap", "barrel"].forEach((r) => {
+      const k = (f.pool || []).includes(r) ? "pass" : (f.drop && f.drop[r] ? f.drop[r].category : "no D");
+      cnt[r][k] = (cnt[r][k] || 0) + 1;
+    }));
+    const hl = pp.HTMISS_LINKED || [];
+    const GRADES = [
+      ["pass", "pool", "passes all five tests: in the candidate list for that region."],
+      ["dead", "drop", "test 1 fails: the column is constant or empty in that region."],
+      ["htmiss-linked", "htmiss", `test 2 fails: the name is on a fixed, hand-written list of ${hl.length || 9} HTmiss / jet-activity variables in
+        <code>kj_sigbg_mk5.py</code> (<code>HTMISS_LINKED</code>)${hl.length ? ": " + hl.map((n) => `<code>${esc(n)}</code>`).join(", ") : ""}.
+        This is a name list, not a measurement. The number shown as its reason is only its D.`],
+      ["non-physics", "nonphys", "test 2 fails: the name matches a trigger, quality or pileup pattern (<code>trigpassed_*</code>, <code>isgood*</code>, <code>coreflags</code>, <code>*interactionspercrossing</code>, …)."],
+      ["suspicious", "susp", `test 3 fails: one mass point on its own separates at ${tex("D \\ge " + Sx)}.`],
+      ["weak", "drop", `test 4 fails: ${tex("D < \\max(" + W + ",\\, 2D_{crit})")} in that region.`],
+      ["redundant", "drop", `test 5 fails: background ${tex("|\\rho| \\ge " + C)} with a stronger separator in the same block; only the block's best stays.`],
+    ];
     return `<section class="decided">
       <div class="eyebrow">the rule, in one place</div>
       <h2>How the NN input features are decided</h2>
@@ -754,8 +769,14 @@
       <b>P3</b> is one inclusive network per role on P1 endcap ${tex("\\cup")} P1 barrel, with a region-flag input.
       Each prototype is scored by a gradient-boosted surrogate (5-fold out-of-fold AUC, mass points weighted equally) and by the
       distance correlation between the NN1 and NN2 scores on background. The surrogate only nominates; final placement belongs to GAMBIT, with closure as referee.</p>
-      <p class="small muted">Removed from the candidate lists this run (feature × region): weak ${nd("weak")} · redundant ${nd("redundant")} · htmiss-linked ${nd("htmiss-linked")} ·
-      non-physics ${nd("non-physics")} · suspicious ${nd("suspicious")} · dead ${nd("dead")}. Every reason is in <code>gambit_inputs/drop_suggestions.txt</code> and on <a href="#/rankings">Rankings</a>.</p>
+      <h3 class="grades-h">Grades</h3>
+      <p class="prose">Each feature gets one grade per region. The tests run in the order above and the <b>first test it fails</b> sets the grade,
+      so a feature graded <b>htmiss-linked</b> was never checked for weak or redundant.</p>
+      <div class="tablewrap"><table class="grades"><thead><tr><th>grade</th><th>how it is decided</th><th class="n">endcap</th><th class="n">barrel</th></tr></thead>
+        <tbody>${GRADES.map(([k, cls, how]) => `<tr><td><span class="chip ${cls} gchip">${esc(k)}</span></td><td>${how}</td>
+          <td class="n"><b>${cnt.endcap[k] || 0}</b></td><td class="n"><b>${cnt.barrel[k] || 0}</b></td></tr>`).join("")}</tbody>
+        <tfoot><tr><td></td><td class="muted">total</td><td class="n">${RUN.features.length}</td><td class="n">${RUN.features.length}</td></tr></tfoot></table></div>
+      <p class="small muted">Every reason is in <code>gambit_inputs/drop_suggestions.txt</code>, on <a href="#/rankings">Rankings</a>, and in the <b>all ${RUN.features.length}</b> view of the Top features list.</p>
     </section>`;
   }
   VIEWS.findings = function () {
@@ -1513,14 +1534,16 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
   function splitArg(arg, n) { const p = (arg || "").split("|"); while (p.length < n) p.push(""); return p; }
 
   // one-click "every feature in one PDF" bar: the pipeline's bundles/<run>/<split>.pdf
+  const DL_ICON = `<svg class="dl-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path class="dl-ic-arrow" d="M12 3v12M7 10l5 5 5-5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>`;
   function dlBar(splits, primary, what) {
     const sp = splits.filter((x) => x.bundle).sort((a, b) => (b.id === primary) - (a.id === primary));
     if (!sp.length) return "";
     return `<section class="dlbar" aria-label="Download every feature as one PDF">
-      <div class="dlbar-l"><span class="dlbar-k">look here first</span><b>Download all ${RUN.features.length} features</b>
+      <div class="dlbar-l"><span class="dlbar-big">${DL_ICON}</span><span class="dlbar-k">look here first</span><b>Download all ${RUN.features.length} features</b>
         <span class="dlbar-s">${esc(what)} · one PDF per split, one bookmark per feature</span></div>
-      <div class="dlbar-btns">${sp.map((x) => `<a class="dlbtn ${x.id === primary ? "" : "alt"}" href="${esc(x.bundle.href)}" download>
-        <b>${esc(x.title.replace(/^.*? · /, ""))}</b><span class="dlbtn-m">${x.bundle.pages} pages · ${kb(x.bundle.bytes)} · PDF ↓</span>
+      <div class="dlbar-btns">${sp.map((x) => `<a class="dlbtn" href="${esc(x.bundle.href)}" download>
+        <span class="dlbtn-ic">${DL_ICON}</span><b>${esc(x.title.replace(/^.*? · /, ""))}</b><span class="dlbtn-m">${x.bundle.pages} pages · ${kb(x.bundle.bytes)} · PDF</span>
         <span class="dlbtn-d">${esc(x.desc || "")}</span></a>`).join("")}</div></section>`;
   }
 
@@ -1763,7 +1786,7 @@ python site_builder/build_site.py              # renders the PDFs, writes data/*
         separates (${tex("D \\ge \\max(" + W + ",\\,2D_{crit})")}) · strongest of its redundancy block (${tex("|\\rho| \\ge " + (P().CORR_BLOCK || 0.9))}). Ranked by equal-weight KS ${tex("D")}.
         <a href="#/findings">How this list is decided →</a>${every ? `<br><b>all</b>: every feature present, ranked by ${tex("D")} in ${r}. Each is marked <span class="chip pool">pass</span> or with the
         <span class="chip drop">reason</span> it is left out (hover for the detail); failing features are dimmed.` : ""}</p>
-      <ol class="topx-list">${list.map((f) => `<li data-n="${esc(f.name)}"${every && !gradeOf(f, r).pass ? ' class="fail"' : ""}>${esc(f.name)}${every ? ` <span class="tx-g">${esc(gradeOf(f, r).cat)}</span>` : ""}</li>`).join("")}</ol>
+      <ol class="topx-list">${list.map((f) => `<li data-n="${esc(f.name)}"${every && !gradeOf(f, r).pass ? ' class="fail"' : ""}>${esc(f.name)}${every ? ` <b class="tx-g">${esc(gradeOf(f, r).cat)}</b>` : ""}</li>`).join("")}</ol>
       <div class="tx-chart" role="img" aria-label="Bar chart of KS separation D for the listed features">
         <div class="tx-legend">${kind === "sb"
           ? `<span><i class="sw ${r}"></i>${tex("D")} equal-weight, ${r}</span><span><i class="sw rng"></i>range over the six mass points</span><span><i class="sw noise"></i>${tex("2D_{crit}")} noise</span>`

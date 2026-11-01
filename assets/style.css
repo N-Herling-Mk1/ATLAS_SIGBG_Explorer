@@ -43,6 +43,7 @@
   --bar-b: #dc6a3a;
   --hi: #ffd21f;
   --hi-soft: rgba(255, 210, 31, .10);
+  --hi-dim: rgba(255, 210, 31, .45);
   --shine: rgba(255, 255, 255, .26);
   --hi-glow: 0 0 18px rgba(255, 210, 31, .28);
 }
@@ -80,6 +81,7 @@
   --bar-e: #1f5fa8;
   --bar-b: #b04a1c;
   --hi: #b58900;
+  --hi-dim: rgba(181, 137, 0, .45);
   --hi-soft: #fbf3d6;
   --shine: rgba(255, 255, 255, .7);
   --hi-glow: none;
@@ -569,20 +571,23 @@ canvas.zoomcv { max-width: 100%; max-height: calc(100vh - 100px); background: #f
 .dlbar-l b { font: 900 25px/1.1 var(--display); color: var(--ink); }
 .dlbar-s { font: 12.5px var(--mono); color: var(--ink2); }
 .dlbar-btns { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
-/* primary = gold-tinted panel (was solid red-orange, too loud); alt = plain panel */
-.dlbtn { display: flex; flex-direction: column; gap: 4px; text-decoration: none; padding: 16px 18px; border-radius: 8px;
-  background: linear-gradient(var(--hi-soft), var(--hi-soft)), var(--panel2); color: var(--ink); border: 2px solid var(--hi);
-  box-shadow: inset 0 0 0 1px var(--hi-soft); min-height: 108px; transition: background .15s, border-color .15s; }
-.dlbtn b { color: var(--hi); }
-.dlbtn .dlbtn-m { color: var(--ink2); }
-.dlbtn b { font: 900 18px/1.2 var(--display); }
-.dlbtn-m { font: 13px var(--mono); }
+/* download buttons: all equal (no pre-highlighted one). Resting: dim gold edge, outlined icon.
+   Hover / focus: the edge lights up (full gold + glow) and the icon fills; the background never changes. */
+.dlbtn { position: relative; display: flex; flex-direction: column; gap: 4px; text-decoration: none; padding: 16px 62px 16px 18px; border-radius: 8px;
+  min-height: 108px; background: var(--bg); color: var(--ink); border: 2px solid var(--hi-dim); box-shadow: none;
+  transition: border-color .15s, box-shadow .15s; }
+.dlbtn b { font: 900 18px/1.2 var(--display); color: var(--ink); }
+.dlbtn-m { font: 13px var(--mono); color: var(--accent-ink); }
 .dlbtn-d { font: 12.5px/1.4 var(--sans); opacity: .85; margin-top: auto; }
-.dlbtn:hover { background: linear-gradient(var(--hi-soft), var(--hi-soft)), linear-gradient(var(--hi-soft), var(--hi-soft)), var(--panel2); color: var(--ink); }
-.dlbtn.alt { background: var(--bg); color: var(--ink); border-color: var(--hi); box-shadow: none; }
-.dlbtn.alt b { color: var(--ink); }
-.dlbtn.alt .dlbtn-m { color: var(--accent-ink); }
-.dlbtn.alt:hover { background: var(--panel2); filter: none; color: var(--ink); }
+.dlbtn-ic { position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%;
+  border: 1.5px solid var(--hi-dim); color: var(--hi); z-index: 2; transition: background .15s, color .15s, border-color .15s, box-shadow .15s; }
+.dl-ic { width: 20px; height: 20px; display: block; }
+.dl-ic-arrow { transition: transform .2s; }
+.dlbar-big { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 10px; background: var(--hi); color: var(--bg); margin-bottom: 4px; box-shadow: var(--hi-glow); }
+.dlbar-big .dl-ic { width: 26px; height: 26px; }
+.dlbtn:hover, .dlbtn:focus-visible { background: var(--bg); color: var(--ink); border-color: var(--hi); box-shadow: 0 0 0 1px var(--hi), var(--hi-glow); outline: none; }
+.dlbtn:hover .dlbtn-ic, .dlbtn:focus-visible .dlbtn-ic { border-color: var(--hi); background: var(--hi); color: var(--bg); box-shadow: var(--hi-glow); }
+.dlbtn:hover .dl-ic-arrow, .dlbtn:focus-visible .dl-ic-arrow { transform: translateY(2px); }
 @media (max-width: 900px) { .dlbar { grid-template-columns: 1fr; } }
 
 /* NN groupings: Top-X (criteria list + bar graph), then the prototype suggestions */
@@ -599,7 +604,7 @@ canvas.zoomcv { max-width: 100%; max-height: calc(100vh - 100px); background: #f
 .topx-list li { break-inside: avoid; }
 .topx-list li::marker { color: var(--ink3); }
 .topx-list li.fail { color: var(--ink3); }
-.topx-list .tx-g { font-size: 11px; color: var(--warn); }
+.topx-list .tx-g { font-size: 11px; font-weight: 700; color: var(--warn); }
 .topx-list li:not(.fail) .tx-g { color: var(--ok); }
 .tx-row.fail { opacity: .55; }
 .tx-row.fail:hover { opacity: 1; }
@@ -653,6 +658,12 @@ canvas.zoomcv { max-width: 100%; max-height: calc(100vh - 100px); background: #f
 .decided-steps { margin: 6px 0 14px; padding-left: 24px; max-width: var(--prose); }
 .decided-steps li { margin: 5px 0; }
 .decided .katex-display { margin: 10px 0; }
+.grades-h { margin: 18px 0 6px; }
+table.grades { max-width: 1040px; }
+table.grades td { vertical-align: top; line-height: 1.45; }
+table.grades td:first-child { white-space: nowrap; width: 1%; }
+.gchip { font-weight: 700; font-size: 12.5px; padding: 4px 8px; }
+table.grades tfoot td { border-top: 1px solid var(--rule); font-size: 12.5px; }
 
 /* NN groupings */
 .gpick { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 6px 0 16px; }
@@ -716,3 +727,5 @@ canvas.zoomcv { max-width: 100%; max-height: calc(100vh - 100px); background: #f
   opacity: 1; transform: translateX(330%) skewX(-18deg); transition: transform .85s cubic-bezier(.3, .6, .3, 1), opacity .1s; }
 @media (prefers-reduced-motion: reduce) { .homecard::after, .dlbtn::after { display: none; } }
 :root[data-theme="light"] .hrow-label b { color: var(--ink); }
+/* download buttons: no sweep across the face on hover (only the edge and the icon light up) */
+.dlbtn::after { display: none; }
