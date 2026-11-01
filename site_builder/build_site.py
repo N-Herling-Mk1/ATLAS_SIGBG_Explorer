@@ -16,6 +16,7 @@ Re-running is incremental: a PNG is only re-rendered when its PDF is newer.
 Usage:  python site_builder/build_site.py [--runs mk4_r1 ...] [--dpi 110] [--force]
 """
 import argparse
+from build_eda import build as build_eda   # same folder; per-file column lists for the EDA page
 import ast
 import json
 import re
@@ -659,6 +660,7 @@ def main():
              json.dumps(R, separators=(",", ":")) + ";\n"
         (DATA_OUT / f"{run}.js").write_text(js, encoding="utf-8")
         log(f"  wrote data/{run}.js ({len(js) / 1e6:.2f} MB)")
+        build_eda(run)                      # data/<run>_eda.js: per-file column lists for the EDA page
     meta = pipeline_meta()
     meta["exclude_file"] = read_text(PIPE / "exclude_features.txt")
     meta["nn_file"] = read_text(PIPE / "nn_features_mk4.txt")

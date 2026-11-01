@@ -126,7 +126,7 @@
     v(arg);
     app.focus({ preventScroll: true });
     window.scrollTo(0, 0);
-    const titles = { home: "Home", be: "Features · Barrel–Endcap", sb: "Features · Signal–Background", gbe: "NN groupings · Barrel–Endcap", gsb: "NN groupings · Signal–Background" };
+    const titles = { eda: "EDA · data files", home: "Home", be: "Features · Barrel–Endcap", sb: "Features · Signal–Background", gbe: "NN groupings · Barrel–Endcap", gsb: "NN groupings · Signal–Background" };
     tellShell({ type: "route", hash: location.hash || "#/home", title: titles[view || "home"] || (view ? view[0].toUpperCase() + view.slice(1) : "Home") });
   }
   window.addEventListener("hashchange", route);
@@ -193,6 +193,7 @@
           ["correlation", "Correlation", "Background Spearman matrix and redundancy blocks per region."],
           ["prototypes", "Prototypes", "Candidate NN1/NN2 input sets P0–P3 and their surrogate AUCs."],
           ["exclusions", "Exclusions", "What was left out and why; build a new exclude_features.txt."],
+          ["eda", "EDA", "Every column in every file, the checks run on the files, and the flagged features."],
           ["methods", "Metrics", "Definitions of every number on this site."],
           ["files", "Files & code", "Download every result file and the code to rerun it."],
           ["plots", "PDF browser", "Every page of every PDF, current and archived, PDF by PDF: browse or search all of them."],
@@ -654,6 +655,167 @@
       if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(ta.value).then(done, () => { ta.select(); document.execCommand("copy"); done(); });
       else { ta.removeAttribute("readonly"); ta.select(); document.execCommand("copy"); ta.setAttribute("readonly", ""); done(); }
     });
+  };
+
+  // ------------------------------------------------------------------ EDA: what is in each data file, what was tested, what got flagged
+  // Per-file column lists come from data/<run>_eda.js (site_builder/build_eda.py); everything else is already in RUN.
+  const EDA_ST = { q: "", status: "all", file: "all", fq: "" };
+  const EXCL_LABEL = { not_ALL7: "not in all 7 files", hard: "hard-excluded name", user: "exclude_features.txt",
+    non_numeric: "non-numeric", constant: "constant in every file" };
+  function edaFlags(f) {
+    // informational flags on a scored feature: none of these removes it from the analysis
+    const out = [], pct = (v) => (v * 100).toFixed(v < 0.01 ? 2 : 1) + "%";
+    ["endcap", "barrel"].forEach((r) => {
+      const x = f.regions[r];
+      if (!x) return;
+      if (x.bkg_nan > 0) out.push({ t: "NaN", r, d: `background NaN ${pct(x.bkg_nan)}` });
+      if (x.bkg_m999 > 0) out.push({ t: "−999", r, d: `background −999 ${pct(x.bkg_m999)}` });
+      if (x.suspicious) out.push({ t: "suspicious", r, d: `one mass point at D ≥ ${P().SUSPICIOUS_D || 0.99}` });
+      if (f.drop && f.drop[r] && f.drop[r].category === "dead") out.push({ t: "dead", r, d: "constant or empty in this region" });
+      const b = f.bkg_split && f.bkg_split[r];
+      if (b && b.D >= JET_DEP) out.push({ t: "jet-dependent", r, d: `background 0–1 vs 2+ jets: D ${fmt(b.D, 2)}` });
+    });
+    if (f.category) out.push({ t: f.category, r: "both", d: f.category === "htmiss-linked" ? "on the HTMISS_LINKED name list" : "trigger / quality / pileup name pattern" });
+    return out;
+  }
+  VIEWS.eda = function () {
+    const E = (S.eda || {})[RUN.name];
+    if (!E) {
+      app.innerHTML = `<p class="loading">Loading the per-file column lists…</p>`;
+      loadScript(`data/${RUN.name}_eda.js`).then(() => VIEWS.eda()).catch(() => {
+        app.innerHTML = `<div class="callout"><h3>No EDA data for ${esc(RUN.name)}</h3><p><code>data/${esc(RUN.name)}_eda.js</code> did not load.
+          Run <code>python site_builder/build_eda.py</code> (or the full <code>build_site.py</code>) from the repo root.</p></div>`;
+      });
+      return;
+    }
+    const pp = P(), labels = E.order;
+    const fileName = (l) => (l === "bkg" ? pp.BKG_FILE : (pp.MASS_FILES || {})[l]) || l;
+    const ev = {}; (RUN.region_audit.rows || []).forEach((r) => { ev[r.sample] = r; });
+    const sets = {}; labels.forEach((l) => { sets[l] = new Set(E.files[l]); });
+    const union = [...new Set(labels.flatMap((l) => E.files[l]))].sort((a, b) => a.localeCompare(b));
+    const common = union.filter((c) => labels.every((l) => sets[l].has(c)));
+
+    // status of every column
+    const ex = RUN.excluded || {}, exOf = {};
+    Object.entries(ex).forEach(([k, v]) => v.forEach((n) => { exOf[n] = k; }));
+    const dupOf = {}; Object.entries(RUN.duplicates || {}).forEach(([keep, v]) => v.forEach((n) => { dupOf[n] = keep; }));
+    const fmap = {}; RUN.features.forEach((f) => { fmap[f.name] = f; });
+    const nDup = Object.values(RUN.duplicates || {}).reduce((a, v) => a + v.length, 0);
+    const rows = union.map((c) => {
+      const f = fmap[c];
+      const st = f ? "scored" : exOf[c] ? "excluded" : dupOf[c] ? "duplicate" : "other";
+      const why = f ? "" : exOf[c] ? EXCL_LABEL[exOf[c]] || exOf[c] : dupOf[c] ? "same as " + dupOf[c] : "";
+      return { c, f, st, why, flags: f ? edaFlags(f) : [] };
+    });
+    const flagged = rows.filter((r) => r.flags.length);
+    const flagRows = flagged.flatMap((r) => r.flags.map((g) => ({ c: r.c, ...g })));
+    const cnt = (t) => new Set(flagRows.filter((g) => g.t === t).map((g) => g.c)).size;
+
+    // tests that have been run on the files
+    const ut = RUN.unit_test || "", sel = RUN.selection || {};
+    const regOK = (RUN.region_audit.rows || []).every((r) => !r.both && !r.neither);
+    const T = [
+      ["HTmiss selection split", "background htmiss < 40 GeV and every signal event ≥ 40 GeV", "all 7 files", /RESULT:\s*PASS/.test(ut) ? "PASS" : "FLAG", "informational", ut],
+      ["Selection check", `files disjoint in HTmiss (background max ${fmt(sel.bkg_htmiss_max, 3)} GeV, signal min ${fmt(sel.sig_htmiss_min, 3)} GeV)`, "all 7 files", sel.disjoint_in_htmiss ? "PASS" : "FLAG", "informational", ""],
+      ["Region assignment", `every event in exactly one region (${esc(RUN.region_audit.definition || "")})`, "all 7 files", regOK ? "PASS" : "FLAG", "informational", ""],
+      ["Present in all 7 files", "a column must exist in the background and all six signal files to be compared", "columns", `${(ex.not_ALL7 || []).length} out`, "removes", ""],
+      ["Hard-excluded names", "weights, labels, IDs, NN scores, the selection variables (HARD_EXCLUDE patterns)", "columns", `${(ex.hard || []).length} out`, "removes", ""],
+      ["exclude_features.txt", "columns you chose to leave out", "columns", `${(ex.user || []).length} out`, "removes", ""],
+      ["Numeric", "the column must hold numbers", "columns", `${(ex.non_numeric || []).length} out`, "removes", ""],
+      ["Not constant", "a column with one value in every file carries nothing", "columns", `${(ex.constant || []).length} out`, "removes", ""],
+      ["Rank-identical duplicates", "same missing pattern and same ordering in every file (same KS D); the first name is kept", "columns", `${nDup} out · ${Object.keys(RUN.duplicates || {}).length} groups`, "removes copies", ""],
+      ["Missing values", "NaN or −999 present in the background, per region", "scored features", `${cnt("NaN") + cnt("−999") ? "FLAG " + new Set(flagRows.filter((g) => g.t === "NaN" || g.t === "−999").map((g) => g.c)).size : "none"}`, "informational", ""],
+      ["Dead in one region", "constant or empty in that region", "scored features", cnt("dead") ? "FLAG " + cnt("dead") : "none", "informational", ""],
+      ["Suspicious separation", `one mass point separates at D ≥ ${pp.SUSPICIOUS_D || 0.99}`, "scored features", cnt("suspicious") ? "FLAG " + cnt("suspicious") : "none", "informational", ""],
+      ["Jet dependence", `background with 0–1 jets vs 2+ jets differs at D ≥ ${JET_DEP}`, "scored features", cnt("jet-dependent") ? "FLAG " + cnt("jet-dependent") : "none", "informational", ""],
+      ["Name categories", "on the HTMISS_LINKED list, or a trigger / quality / pileup name", "scored features", `FLAG ${cnt("htmiss-linked") + cnt("non-physics")}`, "informational", ""],
+    ];
+    const PLANNED = [
+      ["T1 · out of range", "values outside physical bounds (ΔR above ~8, |φ| above π, negative counts, …)"],
+      ["T2 · spike / fill value", "one exact value holding a large share of events, e.g. a default written when a jet is missing"],
+      ["T3 · gap", "a cluster cut off from the bulk by a gap many times the bulk's spread"],
+      ["T4 · what explains it", "which other column predicts the flagged events (e.g. jet_n = 0)"],
+      ["T5 · effect on D", "separation with and without the flagged events"],
+    ];
+    const res = (s) => `<span class="chip ${/^PASS|^none/.test(s) ? "pool" : /out/.test(s) ? "nonphys" : "drop"} gchip">${esc(s)}</span>`;
+    const pres = (c) => labels.map((l) => `<td class="pc ${sets[l].has(c) ? "y" : "n"}" title="${esc(l)}">${sets[l].has(c) ? "●" : "·"}</td>`).join("");
+    const short = (l) => (l === "bkg" ? "bkg" : l.replace("mH", "").replace("_mS", "/"));
+
+    app.innerHTML = `
+      <div class="eyebrow">exploratory data analysis · run ${esc(RUN.name)}</div>
+      <h1>EDA · the data files</h1>
+      <p class="lede">What is in each input file, which checks have been run on it, and which features were flagged.
+      Flags are <b>informational</b>: none of them removes a feature. The rows marked <b>removes</b> in the tests table are the pipeline's own column rules.</p>
+
+      <h2>Files</h2>
+      <div class="tablewrap"><table class="eda-files"><thead><tr><th>sample</th><th>file</th><th class="n">events</th><th class="n">endcap</th><th class="n">barrel</th><th class="n">columns</th><th class="n">only in this file</th></tr></thead>
+        <tbody>${labels.map((l) => { const r = ev[l] || {}, only = E.files[l].filter((c) => labels.every((m) => m === l || !sets[m].has(c))).length;
+          return `<tr><td><b>${esc(l)}</b></td><td class="mono small">${esc(fileName(l))}</td><td class="n">${int(r.n)}</td><td class="n">${int(r.endcap)}</td><td class="n">${int(r.barrel)}</td><td class="n"><b>${E.files[l].length}</b></td><td class="n">${only}</td></tr>`; }).join("")}</tbody></table></div>
+      <div class="funnel">
+        <div><b>${union.length}</b><span>columns in any file</span></div><i>→</i>
+        <div><b>${common.length}</b><span>in all 7 files</span></div><i>→</i>
+        <div><b>${common.length - (ex.hard || []).length - (ex.user || []).length - (ex.non_numeric || []).length - (ex.constant || []).length}</b><span>after name, numeric and constant rules</span></div><i>→</i>
+        <div><b>${RUN.features.length}</b><span>scored, after removing ${nDup} duplicates</span></div>
+      </div>
+
+      <h2>Tests run on the files</h2>
+      <div class="tablewrap"><table class="eda-tests"><thead><tr><th>test</th><th>what it checks</th><th>on</th><th>result</th><th>effect</th></tr></thead>
+        <tbody>${T.map(([n, w, on, r, eff, det]) => `<tr><td><b>${esc(n)}</b>${det ? `<details><summary class="small">output</summary><pre class="small">${esc(det)}</pre></details>` : ""}</td>
+          <td>${w}</td><td class="small muted">${esc(on)}</td><td>${res(r)}</td><td class="small ${eff === "informational" ? "muted" : ""}">${esc(eff)}</td></tr>`).join("")}
+          ${PLANNED.map(([n, w]) => `<tr class="planned"><td><b>${esc(n)}</b></td><td>${esc(w)}</td><td class="small muted">scored features</td><td><span class="chip gchip">not run yet</span></td><td class="small muted">informational</td></tr>`).join("")}</tbody></table></div>
+
+      <h2>Flagged features <span class="muted small">${flagged.length} of ${RUN.features.length} scored</span></h2>
+      <input type="search" id="edaFq" placeholder="filter flagged features or flag names" value="${esc(EDA_ST.fq)}" class="eda-search" aria-label="Filter flagged features">
+      <div class="tablewrap eda-scroll"><table class="eda-flags"><thead><tr><th>feature</th><th>flag</th><th>region</th><th>detail</th></tr></thead>
+        <tbody>${flagRows.map((g) => `<tr data-s="${esc((g.c + " " + g.t + " " + g.r).toLowerCase())}"><td><a class="fname" href="#/feature/${fid(g.c)}">${esc(g.c)}</a></td>
+          <td><span class="chip ${g.t === "htmiss-linked" ? "htmiss" : g.t === "non-physics" ? "nonphys" : g.t === "suspicious" ? "susp" : g.t === "jet-dependent" ? "jet" : "drop"}">${esc(g.t)}</span></td>
+          <td>${g.r === "both" ? "both" : `<span class="chip ${g.r}">${g.r}</span>`}</td><td class="small">${esc(g.d)}</td></tr>`).join("")}</tbody></table></div>
+
+      <h2>Every column in every file <span class="muted small" id="edaN"></span></h2>
+      <div class="toolbar eda-tools">
+        <input type="search" id="edaQ" placeholder="search ${union.length} column names" value="${esc(EDA_ST.q)}" class="eda-search" aria-label="Search columns">
+        <label>status <select id="edaS">${[["all", "all"], ["scored", "scored"], ["flagged", "scored, with a flag"], ["excluded", "excluded"], ["duplicate", "duplicate (copy)"]]
+          .map(([v, t]) => `<option value="${v}" ${EDA_ST.status === v ? "selected" : ""}>${t}</option>`).join("")}</select></label>
+        <label>file <select id="edaF"><option value="all">any</option>${labels.map((l) => `<option value="in:${l}" ${EDA_ST.file === "in:" + l ? "selected" : ""}>in ${esc(l)}</option><option value="out:${l}" ${EDA_ST.file === "out:" + l ? "selected" : ""}>missing from ${esc(l)}</option>`).join("")}</select></label>
+        <button class="btn sm" type="button" id="edaCsv">download CSV</button>
+      </div>
+      <div class="tablewrap eda-scroll tall"><table class="eda-all"><thead><tr><th>column</th>${labels.map((l) => `<th class="pc" title="${esc(fileName(l))}">${esc(short(l))}</th>`).join("")}<th>status</th><th>flags</th></tr></thead>
+        <tbody>${rows.map((r) => `<tr data-n="${esc(r.c.toLowerCase())}" data-st="${r.st}${r.flags.length ? " flagged" : ""}" data-in="${labels.filter((l) => sets[l].has(r.c)).join(" ")}">
+          <td>${r.f ? `<a class="fname" href="#/feature/${fid(r.c)}">${esc(r.c)}</a>` : `<span class="mono">${esc(r.c)}</span>`}</td>${pres(r.c)}
+          <td><span class="chip ${r.st === "scored" ? "pool" : r.st === "excluded" ? "nonphys" : ""}">${esc(r.st)}</span>${r.why ? ` <span class="small muted">${esc(r.why)}</span>` : ""}</td>
+          <td>${[...new Set(r.flags.map((g) => g.t))].map((t) => { const rg = r.flags.filter((g) => g.t === t).map((g) => g.r);
+            const where = rg.includes("both") || (rg.includes("endcap") && rg.includes("barrel")) ? "" : " · " + rg[0];
+            return `<span class="chip drop" title="${esc(r.flags.filter((g) => g.t === t).map((g) => g.r + ": " + g.d).join("\n"))}">${esc(t + where)}</span>`; }).join("")}</td></tr>`).join("")}</tbody></table></div>
+      <p class="small muted">Column lists: <code>${esc(E.source)}</code>. ● present · absent. Exclusions: <code>00_common/excluded_report.txt</code>; duplicates: <code>00_common/duplicates.txt</code>.</p>`;
+
+    // filters work on the rendered rows, so typing never re-renders the page
+    const tb = app.querySelector(".eda-all tbody"), nEl = app.querySelector("#edaN");
+    const apply = () => {
+      const q = EDA_ST.q.toLowerCase(), s = EDA_ST.status, [mode, lab] = EDA_ST.file.split(":");
+      let n = 0;
+      tb.querySelectorAll("tr").forEach((tr) => {
+        const ins = tr.dataset.in.split(" ");
+        const ok = (!q || tr.dataset.n.includes(q)) && (s === "all" || tr.dataset.st.split(" ").includes(s)) &&
+          (mode === "all" || (mode === "in" ? ins.includes(lab) : !ins.includes(lab)));
+        tr.hidden = !ok; if (ok) n++;
+      });
+      nEl.textContent = `${n} of ${union.length} shown`;
+    };
+    const applyF = () => {
+      const q = EDA_ST.fq.toLowerCase();
+      app.querySelectorAll(".eda-flags tbody tr").forEach((tr) => { tr.hidden = !!q && !tr.dataset.s.includes(q); });
+    };
+    app.querySelector("#edaQ").addEventListener("input", (e) => { EDA_ST.q = e.target.value; apply(); });
+    app.querySelector("#edaS").addEventListener("change", (e) => { EDA_ST.status = e.target.value; apply(); });
+    app.querySelector("#edaF").addEventListener("change", (e) => { EDA_ST.file = e.target.value; apply(); });
+    app.querySelector("#edaFq").addEventListener("input", (e) => { EDA_ST.fq = e.target.value; applyF(); });
+    app.querySelector("#edaCsv").addEventListener("click", () => {
+      const head = ["column", ...labels, "status", "reason", "flags"].join(",");
+      const body = rows.filter((r, i) => !tb.children[i].hidden).map((r) => [r.c, ...labels.map((l) => (sets[l].has(r.c) ? 1 : 0)), r.st, r.why,
+        [...new Set(r.flags.map((g) => g.t))].join(" ")].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","));
+      download(`eda_columns_${RUN.name}.csv`, head + "\n" + body.join("\n") + "\n");
+    });
+    apply(); applyF();
   };
 
   // ------------------------------------------------------------------ FINDINGS

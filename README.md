@@ -38,6 +38,7 @@ tools/
   selection_check.py       measures the HTmiss edge and the background jet-count structure
 site_builder/
   build_site.py            results/<run>  →  data/ + img/
+  build_eda.py             results/<run>/00_common/feature_inventory.txt  →  data/<run>_eda.js (EDA page; build_site.py calls it)
 requirements.txt
 .nojekyll                  tells GitHub Pages to serve the files as they are
 ```
@@ -63,7 +64,9 @@ Every plot view has:
 - **PDF links**: open the original vector PDF at that page, download the whole feature PDF, download the PNG. Group views also build one PDF of the whole group in the browser (served site only, see below).
 - **Keyboard**: ↑ / ↓ (or j / k) steps through the feature list.
 
-The site has these pages: Overview · **Graphs** · Findings · Rankings · Feature · Barrel vs endcap · Correlation · Prototypes · Exclusions · **PDF browser** · Summaries · Metrics · Files & code · Archive.
+The site has these pages: Overview · **Graphs** · Findings · **EDA** · Rankings · Feature · Barrel vs endcap · Correlation · Prototypes · Exclusions · **PDF browser** · Summaries · Metrics · Files & code · Archive.
+
+**EDA** lists every column in every input file (searchable, filterable by status and by file, downloadable as CSV), the checks run on the files with their results, and every flagged feature. Flags are informational and never remove a feature; the column rules (not in all 7 files, hard-excluded names, non-numeric, constant, duplicates) are marked as the ones that do. Its per-file column lists come from `data/<run>_eda.js`, written by `site_builder/build_eda.py`.
 
 **Graphs** is the quickest way to see every plot. Pick one or more splits:
 

@@ -734,3 +734,24 @@ table.grades tfoot td { border-top: 1px solid var(--rule); font-size: 12.5px; }
 :root[data-theme="light"] .hrow-label b { color: var(--ink); }
 /* download buttons: no sweep across the face on hover (only the edge and the icon light up) */
 .dlbtn::after { display: none; }
+
+/* EDA page */
+.funnel { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; margin: 14px 0 6px; }
+.funnel > div { flex: 1 1 150px; border: 1px solid var(--rule); border-radius: 8px; padding: 10px 14px; background: var(--panel); display: flex; flex-direction: column; gap: 4px; }
+.funnel b { font: 400 26px/1 var(--mono); color: var(--ink); }
+.funnel span { font-size: 12.5px; color: var(--ink2); }
+.funnel > i { align-self: center; font-style: normal; color: var(--ink3); font-size: 18px; }
+.eda-search { width: min(420px, 100%); margin: 0 0 10px; }
+.eda-tools { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-bottom: 4px; }
+.eda-tools .eda-search { margin: 0; }
+.eda-tools label { font-size: 13px; color: var(--ink2); display: inline-flex; gap: 6px; align-items: center; }
+.eda-scroll { max-height: 460px; overflow: auto; }
+.eda-scroll.tall { max-height: 640px; }
+.eda-scroll thead th { position: sticky; top: 0; background: var(--panel); z-index: 1; }
+table.eda-tests td { vertical-align: top; }
+table.eda-tests tr.planned td { opacity: .7; }
+table.eda-tests pre { margin: 6px 0 0; max-width: 520px; overflow: auto; }
+td.pc, th.pc { text-align: center; padding-left: 4px; padding-right: 4px; font: 12px var(--mono); white-space: nowrap; }
+td.pc.y { color: var(--ok); }
+td.pc.n { color: var(--ink3); }
+table.eda-all td:first-child { overflow-wrap: anywhere; }
