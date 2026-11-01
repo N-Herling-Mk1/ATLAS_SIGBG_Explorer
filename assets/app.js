@@ -732,12 +732,41 @@
       cnt[r][k] = (cnt[r][k] || 0) + 1;
     }));
     const hl = pp.HTMISS_LINKED || [];
+    // evidence for the rationales, read from this run
+    const tj = (n) => { const f = feat(n), t = f && f.two_jet && f.two_jet.endcap; return t ? `<code>${esc(n)}</code> ${fmt(t.D_all, 2)} &rarr; ${fmt(t.D_cut, 2)}` : ""; };
+    const tjEx = ["jet_n_NOSYS", "msvtx_jetMinDR_NOSYS", "met_sumet_NOSYS"].map(tj).filter(Boolean).join(", ");
+    const susp = RUN.features.filter((f) => Object.values(f.drop || {}).some((d) => d.category === "suspicious")).map((f) => `<code>${esc(f.name)}</code>`);
+    const WHY = {
+      pass: `It survived every test, so nothing found so far says its separation is an artefact. That makes it a <b>candidate</b>, not a chosen input:
+        which network it goes in, and whether NN1 and NN2 stay independent on background, is decided later (prototypes, then GAMBIT with ABCD closure as referee).`,
+      dead: `A column with one value (or no values) in a region carries no information there: there is nothing for a network to learn,
+        and a KS distance on it means nothing. A feature can be dead in one region and live in the other (for example a barrel-only hit count in the endcap).`,
+      "htmiss-linked": `The samples are disjoint in HTmiss by selection: background is data at HTmiss &lt; 40 GeV, signal is MC at HTmiss &ge; 40 GeV (§1).
+        Any variable tied to HTmiss or jet activity therefore separates <em>partly because of where the cut sits</em>, not because LLP events differ from background.
+        A network trained on it would learn the cut, and on real data, where both sides pass the same selection, that separation is not there.
+        Evidence from this run: restricting background to events with 2+ jets cuts endcap D sharply${tjEx ? " (" + tjEx + ")" : ""}.
+        <b>Limits:</b> the list is chosen by name, not measured; some features on the list may keep real separation, and some jet-dependent features are not on it (§5).
+        With these files the honest status is &ldquo;cannot be tested&rdquo;, not &ldquo;fails&rdquo;; a background sample at HTmiss &ge; 40 GeV would settle it.`,
+      "non-physics": `Trigger decisions, event-quality flags and pileup describe how and when an event was recorded, not the LLP decay.
+        Background here is data and signal is MC, so these columns separate through data/MC differences (trigger emulation, quality definitions, the simulated pileup profile).
+        A network would learn &ldquo;data or MC&rdquo;, which is useless on real data.`,
+      suspicious: `Near-perfect separation at a single mass point is not what a physical variable does when signal and background overlap at all.
+        It usually means a default or sentinel value filled on one side only, a variable defined differently in data and MC, or information leaking from the selection.
+        Such a feature is held back until someone has looked at why${susp.length ? " (this run: " + susp.join(", ") + ")" : ""}.
+        <b>Limits:</b> the ${Sx} threshold is a judgment call; a genuinely excellent variable would also be caught, so these are flagged for review, never silently used.`,
+      weak: `Below ${tex("2D_{crit}")} the separation cannot be told apart from statistical noise for these sample sizes (${tex("D_{crit}")} is the 95% KS critical value; twice it is a safety margin).
+        Below ${tex("D = " + W)} the separation is measurable but too small to be worth an input slot, and every extra input is one more thing NN1 and NN2 can share on background.
+        <b>Limits:</b> ${W} is a chosen cut, not derived. KS also judges one variable at a time, so a weak feature can still help in combination with others.`,
+      redundant: `Two features with background ${tex("|\\rho| \\ge " + C)} carry nearly the same information, so the second adds little separation.
+        Correlation is measured on background because ABCD needs NN1 and NN2 to be independent on background: two near-copies split across the networks would correlate them and break closure.
+        Only the strongest separator in each block is kept. <b>Limits:</b> Spearman sees monotonic dependence only, and ${C} is a chosen cut.`,
+    };
     const GRADES = [
       ["pass", "pool", "passes all five tests: in the candidate list for that region."],
       ["dead", "drop", "test 1 fails: the column is constant or empty in that region."],
       ["htmiss-linked", "htmiss", `test 2 fails: the name is on a fixed, hand-written list of ${hl.length || 9} HTmiss / jet-activity variables in
         <code>kj_sigbg_mk5.py</code> (<code>HTMISS_LINKED</code>)${hl.length ? ": " + hl.map((n) => `<code>${esc(n)}</code>`).join(", ") : ""}.
-        This is a name list, not a measurement. The number shown as its reason is only its D.`],
+        The number shown as its reason elsewhere is only its D.`],
       ["non-physics", "nonphys", "test 2 fails: the name matches a trigger, quality or pileup pattern (<code>trigpassed_*</code>, <code>isgood*</code>, <code>coreflags</code>, <code>*interactionspercrossing</code>, …)."],
       ["suspicious", "susp", `test 3 fails: one mass point on its own separates at ${tex("D \\ge " + Sx)}.`],
       ["weak", "drop", `test 4 fails: ${tex("D < \\max(" + W + ",\\, 2D_{crit})")} in that region.`],
@@ -752,6 +781,7 @@
       where ${tex("F_s")} weights the six mass points equally, so no single mass point dominates (${tex("D_{\\text{equal}}")}).
       Its noise floor is ${tex("D_{crit} = 1.36\\sqrt{1/n_s + 1/n_b}")}, the 95% KS critical value for these sample sizes.
       A feature joins a region's candidate list only if it passes five tests, in this order:</p>
+      <div class="tests-h">5 tests</div>
       <ol class="decided-steps">
         <li><b>Live</b>: not constant or empty in that region.</li>
         <li><b>Physics, not selection</b>: not HTmiss-linked (background was selected at HTmiss &lt; 40 GeV and signal at &ge; 40 GeV, so these separate by construction; §1–2 below) and not trigger, quality or pileup.</li>
@@ -772,8 +802,8 @@
       <h3 class="grades-h">Grades</h3>
       <p class="prose">Each feature gets one grade per region. The tests run in the order above and the <b>first test it fails</b> sets the grade,
       so a feature graded <b>htmiss-linked</b> was never checked for weak or redundant.</p>
-      <div class="tablewrap"><table class="grades"><thead><tr><th>grade</th><th>how it is decided</th><th class="n">endcap</th><th class="n">barrel</th></tr></thead>
-        <tbody>${GRADES.map(([k, cls, how]) => `<tr><td><span class="chip ${cls} gchip">${esc(k)}</span></td><td>${how}</td>
+      <div class="tablewrap"><table class="grades"><thead><tr><th>grade</th><th>how it is decided, and why</th><th class="n">endcap</th><th class="n">barrel</th></tr></thead>
+        <tbody>${GRADES.map(([k, cls, how]) => `<tr><td><span class="chip ${cls} gchip">${esc(k)}</span></td><td>${how}<p class="g-why"><b>Why:</b> ${WHY[k] || ""}</p></td>
           <td class="n"><b>${cnt.endcap[k] || 0}</b></td><td class="n"><b>${cnt.barrel[k] || 0}</b></td></tr>`).join("")}</tbody>
         <tfoot><tr><td></td><td class="muted">total</td><td class="n">${RUN.features.length}</td><td class="n">${RUN.features.length}</td></tr></tfoot></table></div>
       <p class="small muted">Every reason is in <code>gambit_inputs/drop_suggestions.txt</code>, on <a href="#/rankings">Rankings</a>, and in the <b>all ${RUN.features.length}</b> view of the Top features list.</p>

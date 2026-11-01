@@ -655,6 +655,9 @@ canvas.zoomcv { max-width: 100%; max-height: calc(100vh - 100px); background: #f
 .decided { border: 2px solid var(--accent); border-radius: 10px; background: var(--panel); padding: 18px 22px 16px; margin: 18px 0 30px; box-shadow: var(--glow-soft); }
 .decided .eyebrow { color: var(--accent-ink); }
 .decided h2 { margin: 6px 0 12px; }
+/* "5 tests" title: intense blue, a step larger than the prose */
+.tests-h { font: 800 19px/1.2 var(--sans); color: #2f8cff; letter-spacing: .02em; margin: 14px 0 2px; }
+:root[data-theme="light"] .tests-h { color: #0050e6; }
 .decided-steps { margin: 6px 0 14px; padding-left: 24px; max-width: var(--prose); }
 .decided-steps li { margin: 5px 0; }
 .decided .katex-display { margin: 10px 0; }
@@ -663,6 +666,8 @@ table.grades { max-width: 1040px; }
 table.grades td { vertical-align: top; line-height: 1.45; }
 table.grades td:first-child { white-space: nowrap; width: 1%; }
 .gchip { font-weight: 700; font-size: 12.5px; padding: 4px 8px; }
+table.grades .g-why { margin: 6px 0 2px; font-size: 13.5px; line-height: 1.5; color: var(--ink2); max-width: 760px; }
+table.grades .g-why b { color: var(--ink); }
 table.grades tfoot td { border-top: 1px solid var(--rule); font-size: 12.5px; }
 
 /* NN groupings */
